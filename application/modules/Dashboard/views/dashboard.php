@@ -24,25 +24,25 @@
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient7">
                                     <h4>Total Users</h4>
-                                    <p class="number">1,245</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient1">
                                     <h4>Closed Leads</h4>
-                                    <p class="number">325</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient2">
                                     <h4>Hot Leads</h4>
-                                    <p class="number">₹85,450</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient3">
                                     <h4>Total Leads</h4>
-                                    <p class="number">45</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
 
@@ -50,25 +50,25 @@
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient4">
                                     <h4>Pending</h4>
-                                    <p class="number">62</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient5">
                                     <h4>Follow-ups</h4>
-                                    <p class="number">120</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient6">
                                     <h4>Interested</h4>
-                                    <p class="number">78</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient7">
                                     <h4>Not Interested</h4>
-                                    <p class="number">40</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                         </div>
