@@ -24,8 +24,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 date_default_timezone_set("Asia/Kolkata");
-// $config['base_url'] = 'https://esuvidhatech.in/suvidha-crm/';
-$config['base_url'] = 'http://localhost/suvidha-crm/';
+$config['base_url'] = 'https://esuvidhatech.in/suvidha-crm/';
+// $config['base_url'] = 'http://localhost/suvidha-crm/';
 
 /*
 |--------------------------------------------------------------------------
