@@ -1,0 +1,2 @@
+[24-Sep-2023 17:29:12 UTC] PHP Fatal error:  Attribute "ReturnTypeWillChange" cannot target class (allowed targets: method) in /home2/gizprojects/public_html/lbportal/system/libraries/Session/drivers/Session_files_driver.php on line 50
+[24-Sep-2023 17:29:20 UTC] PHP Fatal error:  Attribute "ReturnTypeWillChange" cannot target class (allowed targets: method) in /home2/gizprojects/public_html/lbportal/system/libraries/Session/drivers/Session_files_driver.php on line 50
