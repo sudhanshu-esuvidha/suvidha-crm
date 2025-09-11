@@ -262,8 +262,8 @@
 							<span>Admin</span>
 						</a>
 						<div class="dropdown-menu">
-							<a class="dropdown-item" href="profile.html">My Profile</a>
-							<a class="dropdown-item" href="settings.html">Settings</a>
+							<a class="dropdown-item" href="<?= base_url('Profile'); ?>">My Profile</a>
+					
 							<a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>
 						</div>
 					</li>
