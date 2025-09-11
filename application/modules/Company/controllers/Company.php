@@ -27,8 +27,8 @@ class Company extends MY_Controller
     // Add company
    public function add_company()
 {
-	error_reporting(-1);
-		ini_set('display_errors', 1);
+	// error_reporting(-1);
+	// 	ini_set('display_errors', 1);
     $company_name = $this->input->post('company_name');
     $email        = $this->input->post('email');
     $phone        = $this->input->post('phone');

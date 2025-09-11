@@ -57,7 +57,7 @@
                                         <td><?= $comp['email']; ?></td>
                                         <td><?= $comp['phone']; ?></td>
                                         <td><?= $comp['address']; ?></td>
-                                        <td><?= $comp['tenure']; ?> Months</td>
+                                        <td><?= $comp['tenure']; ?></td>
                                         <td><?= $comp['expiry_date']; ?></td>
                                     <!--     <td>
                                             <?php if($comp['status']==1): ?>
@@ -101,7 +101,7 @@
 <div class="modal fade" id="addCompanyModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('company/add_company'); ?>" method="post">
+            <form action="<?= base_url('Company/add_company'); ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Company</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
