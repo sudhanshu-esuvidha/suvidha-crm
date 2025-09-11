@@ -71,7 +71,7 @@
                                                 onclick="editTask(<?= $task['id']; ?>)">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <a style="color: white;" href="<?= base_url('task/delete/'.$task['id']); ?>" 
+                                            <a style="color: white;" href="<?= base_url('Task/delete/'.$task['id']); ?>" 
                                                 class="btn btn-sm btn-danger"
                                                 onclick="return confirm('Are you sure you want to delete this task?')">
                                                 <i class="fas fa-trash"></i> Delete
@@ -100,7 +100,7 @@
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('task/add'); ?>" method="post">
+            <form action="<?= base_url('Task/add'); ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -176,7 +176,7 @@
 <div class="modal fade" id="editTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('task/update'); ?>" method="post">
+            <form action="<?= base_url('Task/update'); ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -252,7 +252,7 @@
 <!-- JS for Edit -->
 <script>
 function editTask(id) {
-    fetch("<?= base_url('task/get/'); ?>" + id)
+    fetch("<?= base_url('Task/get/'); ?>" + id)
     .then(res => res.json())
     .then(data => {
         document.getElementById('edit_id').value = data.id;

@@ -73,7 +73,7 @@
                                                 onclick="editCompany(<?= $comp['id']; ?>)">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <a style="color: white;" href="<?= base_url('company/delete_company/'.$comp['id']); ?>" 
+                                            <a style="color: white;" href="<?= base_url('Company/delete_company/'.$comp['id']); ?>" 
                                                 class="btn btn-sm btn-danger"
                                                 onclick="return confirm('Are you sure you want to delete this company?')">
                                                 <i class="fas fa-trash"></i> Delete
@@ -149,7 +149,7 @@
 <div class="modal fade" id="editCompanyModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('company/update_company'); ?>" method="post">
+            <form action="<?= base_url('Company/update_company'); ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Company</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -193,7 +193,7 @@
 <!-- JS for Edit -->
 <script>
 function editCompany(id) {
-    fetch("<?= base_url('company/get_company/'); ?>" + id)
+    fetch("<?= base_url('Company/get_company/'); ?>" + id)
     .then(res => res.json())
     .then(data => {
         document.getElementById('edit_id').value = data.id;
