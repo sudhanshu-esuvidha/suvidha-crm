@@ -24,25 +24,25 @@
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient1">
                                     <h4>Total Users (Today)</h4>
-                                    <p class="number">120</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient2">
                                     <h4>Total Leads (Today)</h4>
-                                    <p class="number">80</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient3">
                                     <h4>Pending (Today)</h4>
-                                    <p class="number">45</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient4">
                                     <h4>Follow-ups (Today)</h4>
-                                    <p class="number">20</p>
+                                    <p class="number">00</p>
                                 </div>
                             </div>
                         </div>

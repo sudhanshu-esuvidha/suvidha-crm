@@ -5,9 +5,12 @@
 		<li >
 			<a href="<?php echo base_url(); ?>Dashboard"><i class="la la-dashcube"></i> <span> Dashboard</span> </a>
 		</li>
+		<?php if($user->role==1){ ?>
 		<li >
 			<a href="<?php echo base_url(); ?>Company"><i class="la la-building"></i> <span> Companies</span> </a>
 		</li>
+		<?php } ?>
+
 		<li >
 			<a href="<?php echo base_url(); ?>Task"><i class="la la-building"></i> <span> Task Management</span> </a>
 		</li>
