@@ -15,12 +15,13 @@
 			<a href="<?php echo base_url(); ?>Leads/list"><i class="la la-chart-area"></i> <span> Leads </span></a>
 		</li>
 
-		<?php if($user->role==1){ ?>
+		<!-- <?php if($user->role==1){ ?> -->
+			<!-- <?php } ?> -->
 			<li >
 				<a href="<?php echo base_url(); ?>Mastertable/list/role"><i class="la la-user-shield"></i> <span> Team Roles </span></a>
 			</li>
 			<li class="submenu">
-				<a href="#" class=""><i class="la la-building"></i> <span> Team Structure</span> <span class="menu-arrow"></span></a>
+				<a href="#" class=""><i class="la la-building"></i> <span> Our Team</span> <span class="menu-arrow"></span></a>
 				<ul style="display: none;">
 					<?php $result=get_all_list('master_table',' where type="role"'); ?>
 					<?php foreach($result as $row){ ?>
@@ -45,6 +46,6 @@
 			
 			
 			
-		<?php } ?>
+	
 
 	</ul>

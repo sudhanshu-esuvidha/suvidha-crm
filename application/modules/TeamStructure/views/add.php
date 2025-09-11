@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 <?php $this->load->view('Template/head',$data); ?>
-
 <body>
 	<?php  $date=date("Y-m-d");
 	$date2=date('Y-m-d', strtotime($date.' + 1 day')); ?>
@@ -70,7 +69,7 @@
 													<hr/>
 													<div class="form-group row mb-3">
 
-														<div class="col-md-6 mb-2">
+														<!-- <div class="col-md-6 mb-2">
 															<label>Assign To</label>
 															<?php $result=get_all_list('users'); ?>
 															<select class="form-control" name="parent" >
@@ -80,7 +79,7 @@
 																<?php } ?>
 
 															</select>
-														</div>
+														</div> -->
 														<div class="col-md-6 mb-2">
 															<label>Father's Full Name</label>
 															<input  value="<?php echo $data->father_name; ?>"  type="text" class="form-control" name="father_name"  >

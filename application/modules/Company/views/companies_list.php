@@ -89,10 +89,8 @@
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
-
             </div>
             <?php $this->load->view('Template/footer',$data); ?>
         </div>
@@ -120,6 +118,10 @@
                     <div class="mb-3">
                         <label>Phone</label>
                         <input type="text" name="phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label>Address</label>
