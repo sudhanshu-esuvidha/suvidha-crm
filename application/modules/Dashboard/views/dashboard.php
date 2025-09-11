@@ -20,55 +20,64 @@
                     <!-- DASHBOARD SECTION -->
                     <div class="dashboard-container">
                         <div class="row g-4">
-                            <!-- Existing Cards -->
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient7">
-                                    <h4>Total Users</h4>
-                                    <p class="number">00</p>
-                                </div>
-                            </div>
+                            <!-- 4 Main Cards -->
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient1">
-                                    <h4>Closed Leads</h4>
-                                    <p class="number">00</p>
+                                    <h4>Total Users (Today)</h4>
+                                    <p class="number">120</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient2">
-                                    <h4>Hot Leads</h4>
-                                    <p class="number">00</p>
+                                    <h4>Total Leads (Today)</h4>
+                                    <p class="number">80</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient3">
-                                    <h4>Total Leads</h4>
-                                    <p class="number">00</p>
+                                    <h4>Pending (Today)</h4>
+                                    <p class="number">45</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="dashboard-card gradient4">
+                                    <h4>Follow-ups (Today)</h4>
+                                    <p class="number">20</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Section -->
+                        <div class="row mt-5 g-4">
+                            <!-- Line Chart -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-3">Users & Leads (Weekly)</h5>
+                                    <canvas id="lineChart" height="160"></canvas>
                                 </div>
                             </div>
 
-                            <!-- NEW STATUS CARDS -->
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient4">
-                                    <h4>Pending</h4>
-                                    <p class="number">00</p>
+                            <!-- Bar Chart -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-3">Daily Leads Distribution</h5>
+                                    <canvas id="barChart" height="160"></canvas>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient5">
-                                    <h4>Follow-ups</h4>
-                                    <p class="number">00</p>
+
+                            <!-- Doughnut Chart -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-3">Lead Status Breakdown</h5>
+                                    <canvas id="doughnutChart" height="160"></canvas>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient6">
-                                    <h4>Interested</h4>
-                                    <p class="number">00</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient7">
-                                    <h4>Not Interested</h4>
-                                    <p class="number">00</p>
+
+                            <!-- Area Chart -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-3">Growth Trends</h5>
+                                    <canvas id="areaChart" height="160"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -78,30 +87,88 @@
             </div>
         </div>
 
-        <!-- Theme Customizer -->
-        <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">
-            <div class="sidebar-headerset">
-                <div class="sidebar-headersets">
-                    <h2>Customizer</h2>
-                    <h6 class="text-muted">Personalize your dashboard</h6>
-                </div>
-                <div class="sidebar-headerclose">
-                    <a data-bs-dismiss="offcanvas" aria-label="Close">
-                        <img src="assets/img/close.png" alt="Close">
-                    </a>
-                </div>
-            </div>
-            <div class="offcanvas-body p-3">
-                <?php /* your layout customizer code remains here */ ?>
-            </div>
-            <div class="offcanvas-footer border-top p-3 text-center">
-                <button type="button" class="btn btn-light w-100 bor-rad-50" id="reset-layout">Reset to Default</button>
-            </div>
-        </div>
-
         <!-- Footer -->
         <?php $this->load->view('Template/footer',$data); ?>
     </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Line Chart
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                datasets: [
+                    {
+                        label: 'Users',
+                        data: [50, 60, 75, 90, 120, 100, 130],
+                        borderColor: '#2575fc',
+                        backgroundColor: 'rgba(37,117,252,0.2)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Leads',
+                        data: [20, 40, 35, 50, 80, 70, 90],
+                        borderColor: '#38ef7d',
+                        backgroundColor: 'rgba(56,239,125,0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        // Bar Chart
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                datasets: [
+                    {
+                        label: 'Leads',
+                        data: [10, 20, 15, 30, 25, 35, 40],
+                        backgroundColor: '#f7971e'
+                    }
+                ]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        // Doughnut Chart
+        new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending','Follow-ups','Closed','Interested'],
+                datasets: [{
+                    data: [45, 20, 30, 25],
+                    backgroundColor: ['#f7971e','#ff416c','#38ef7d','#2575fc']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Area Chart (using line with fill)
+        new Chart(document.getElementById('areaChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'],
+                datasets: [
+                    {
+                        label: 'Growth',
+                        data: [30, 50, 40, 70, 90, 100, 120],
+                        borderColor: '#ff4b2b',
+                        backgroundColor: 'rgba(255,75,43,0.3)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: { responsive: true }
+        });
+    </script>
 
     <!-- INTERNAL CSS -->
     <style>
@@ -114,10 +181,10 @@
             margin-top: 20px;
         }
         .dashboard-card {
-            background: #fff;
             border-radius: 15px;
             padding: 25px;
             text-align: center;
+            color: #fff;
             box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -125,54 +192,13 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
-        .dashboard-card h4 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #f0f0f0;
-        }
-        .dashboard-card .number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #fff;
-        }
+        .dashboard-card h4 { font-size: 16px; margin-bottom: 10px; }
+        .dashboard-card .number { font-size: 28px; font-weight: bold; }
         /* Gradient Styles */
         .gradient1 { background: linear-gradient(135deg,#6a11cb,#2575fc); }
         .gradient2 { background: linear-gradient(135deg,#11998e,#38ef7d); }
         .gradient3 { background: linear-gradient(135deg,#f7971e,#ffd200); }
         .gradient4 { background: linear-gradient(135deg,#ff416c,#ff4b2b); }
-        .gradient5 { background: linear-gradient(135deg,#00b09b,#96c93d); }
-        .gradient6 { background: linear-gradient(135deg,#4776e6,#8e54e9); }
-        .gradient7 { background: linear-gradient(135deg,#232526,#414345); }
-        /* Box Section */
-        .dashboard-box {
-            background: #fff;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        .dashboard-box h5 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        .notif-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .notif-list li {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-        .notif-list li:last-child {
-            border-bottom: none;
-        }
-        /* Customizer tweaks */
-        h6.fs-12 { font-size: 12px; color:#555; }
-        .card-radio img { border-radius:8px; border:1px solid #ddd; }
-        .card-radio input:checked + label { border:2px solid #007bff; }
     </style>
 </body>
 </html>
