@@ -61,12 +61,23 @@
                                         <td><?php echo $branch->name; ?></td>
                                         <td><?php echo $parent->name; ?></td>
                                         <td><?php echo date("d-m-Y",strtotime($row->created_at)); ?></td>
-                                        <td>
-                                            <a class="btn btn-sm btn-primary" 
-                                               href="<?php echo base_url(); ?>TeamStructure/add/<?php echo $row->role; ?>/<?php echo $row->id; ?>">
-                                                <i class="bx bxs-edit"></i>
-                                            </a>
-                                        </td>
+                                      <td>
+    <!-- Edit Button -->
+    <a class="btn btn-sm btn-primary" 
+       href="<?= base_url('TeamStructure/add/'.$row->role.'/'.$row->id) ?>" 
+       title="Edit">
+        <i class="fa fa-edit"></i>
+    </a>
+
+    <!-- Delete Button -->
+   <a class="btn btn-sm btn-danger" 
+   href="<?php echo base_url(); ?>TeamStructure/delete_user/<?php echo $row->id; ?>/<?php echo $role->id; ?>" 
+   onclick="return confirm('Are you sure you want to delete this user?');">
+   <i class="fa fa-trash"></i>
+</a>
+
+</td>
+
                                     </tr>
                                 <?php } } ?>
                                 </tbody>
@@ -98,10 +109,21 @@
                                                 </p>
                                             </div>
                                             <div class="widgets-icons-2 rounded-circle bg-gradient-blues text-white ms-auto">
-                                                <a class="text-white" 
-                                                   href="<?php echo base_url(); ?>TeamStructure/add/<?php echo $row->role; ?>/<?php echo $row->id; ?>">
-                                                    <i class="bx bxs-edit"></i>
-                                                </a>
+                                                <div class="d-flex ms-auto gap-2">
+    <a class="btn btn-sm btn-outline-primary" 
+       href="<?= base_url('TeamStructure/add/'.$row->role.'/'.$row->id) ?>" 
+       title="Edit">
+        <i class="fa fa-edit"></i>
+    </a>
+
+    <a class="btn btn-sm btn-danger" 
+   href="<?php echo base_url(); ?>TeamStructure/delete_user/<?php echo $row->id; ?>/<?php echo $role->id; ?>" 
+   onclick="return confirm('Are you sure you want to delete this user?');">
+   <i class="fa fa-trash"></i>
+</a>
+
+</div>
+
                                             </div>
                                         </div>
                                     </div>

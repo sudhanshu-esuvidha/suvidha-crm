@@ -30,107 +30,151 @@ class TeamStructure extends MY_Controller
 public function add()
 {
     $role_id = $this->uri->segment(3);
-    $role = get_row('master_table',' where id='.$role_id);
+    $role = get_row('master_table', ' where id=' . $role_id);
     $data['role'] = $role;
 
-    if ($this->input->post())
-    {
-        // parent id (current logged in user)
+    if ($this->input->post()) {
+
         $parent_id = $this->session->userdata('user_info')->id;
 
-        // If this is a NEW user (no segment(4) ) then check the 5-user limit
-        if (!$this->uri->segment(4))
-        {
-            // count number of users already created by this parent in user_details
+        // Check 5-user limit for new users
+        if (!$this->uri->segment(4)) {
             $this->db->where('parent_id', $parent_id);
             $child_count = $this->db->count_all_results('user_details');
 
-            if ($child_count >= 5)
-            {
+            if ($child_count >= 5) {
                 $this->session->set_flashdata('error', 'You can create a maximum of 5 users under your account.');
-                redirect(base_url().'TeamStructure/add/'.$role_id);
-                return; // stop further execution
+                redirect(base_url() . 'TeamStructure/add/' . $role_id);
+                return;
             }
         }
 
-        $dob = "0000-00-00";
-        if ($this->input->post('dob')) { $dob = $this->input->post('dob'); }
+        $dob = $this->input->post('dob') ?? "0000-00-00";
 
-        $row = get_row('users',' where username="'.$this->input->post('email').'"');
-        if ($row)
-        {
-            if (!$this->uri->segment(4))
-            {
-                $this->session->set_flashdata('error','Email already registered!');
-                redirect(base_url().'TeamStructure/add/'.$role_id);
-            }
+        $row = get_row('users', ' where username="' . $this->input->post('email') . '"');
+        if ($row && !$this->uri->segment(4)) {
+            $this->session->set_flashdata('error', 'Email already registered!');
+            redirect(base_url() . 'TeamStructure/add/' . $role_id);
+            return;
         }
-        else
-        {
-            if (!$this->uri->segment(4))
-            {
-                $name = $this->input->post('first_name').' '.$this->input->post('last_name');
-                $password = encrypt_decrypt('encrypt','123456');
-                $data = array('username' => $this->input->post('email'),'role' => $role_id,'name' => $name);
-                $user_id = $this->Common_Model->insert('users',$data);
-                //////////////SEND CREATE PASSWORD EMAIL////////////////////////////////////
-                $data['name'] = $name;
-                $key = rand(1000000000,9999999999);
-                $link = base_url()."create_password/?key=".$key;
-                $this->Common_Model->update('users',array('create_password_key'=>$key,'create_password_time'=>date("H:i:s")),array('id'=>$user_id));
-                $message = '<strong>Hello '.$name.'</strong><br>Your registration is successfull in  CRM, now you can create your password by click on this button. <br> <a   href="'.$link.'" class="f-fallback button button--green" target="_blank">Create password</a><br>If you did not request a create password, please ignore this email or reply to let us know. This link only valid for the next 24 hours, so be sure to use it right away.<br>If you’re having trouble with the button above, copy and paste the URL below into your web browser.<br>'.$link;
-                $this->send_mail($this->input->post('email'),$message,'Generate Your Password');
-                /////////////////////////////////////////////////////////////////////////////
-            }
-            else
-            {
-                $user_id = $this->uri->segment(4);
-                $name = $this->input->post('first_name').' '.$this->input->post('last_name');
-                $this->Common_Model->update('users',array('name'=>$name),array('id'=>$user_id));
-            }
 
-            $data2 = array(
-                'user_id'    => $user_id,
-                'email'      => $this->input->post('email'),
-                'mobile_no'  => $this->input->post('mobile_no'),
-                'branch'     => $this->input->post('branch'),
-                'parent_id'  => $parent_id,
-                'first_name' => $this->input->post('first_name'),
-                'last_name'  => $this->input->post('last_name'),
-                'father_name'=> $this->input->post('father_name'),
-                'dob'        => $dob,
-                'gender'     => $this->input->post('gender'),
-                'address'    => $this->input->post('address'),
-            );
+        // Name
+        $name = $this->input->post('first_name') . ' ' . $this->input->post('last_name');
 
-            if (!$this->uri->segment(4))
-            {
-                $this->Common_Model->insert('user_details',$data2);
-                $this->session->set_flashdata('success','User successfully created! <br> An email sent to user email id for create password!');
-            }
-            else
-            {
-                $this->Common_Model->update('user_details',$data2,array('user_id'=>$user_id));
-                $this->session->set_flashdata('success','User successfully updated!');
-            }
+        // PASSWORD HANDLING
+        $password = $this->input->post('password');
+        $confirm_password = $this->input->post('confirm_password');
+        $encrypted_password = null;
 
-            redirect(base_url().'TeamStructure/list/'.$role_id);
+        if ($password) {
+            if ($password !== $confirm_password) {
+                $this->session->set_flashdata('error', 'Password and Confirm Password do not match!');
+                redirect(current_url());
+                return;
+            }
+            $encrypted_password = $this->encrypt_decrypt('encrypt', $password);
         }
-    }
-    else
-    {
-        $data['title'] = $role->name.'/Add';
-        $data['heading'] = $role->name.' Add';
+
+        // INSERT OR UPDATE USERS TABLE
+        if (!$this->uri->segment(4)) {
+            // New user
+            $user_data = [
+                'username' => $this->input->post('email'),
+                'role'     => $role_id,
+                'name'     => $name
+            ];
+            if ($encrypted_password) {
+                $user_data['password'] = $encrypted_password;
+            }
+
+            $user_id = $this->Common_Model->insert('users', $user_data);
+
+            // Send Create Password Email if password not set
+            if (!$password) {
+                $key = rand(1000000000, 9999999999);
+                $link = base_url() . "create_password/?key=" . $key;
+                $this->Common_Model->update('users', [
+                    'create_password_key'  => $key,
+                    'create_password_time' => date("H:i:s")
+                ], ['id' => $user_id]);
+
+                $message = '<strong>Hello ' . $name . '</strong><br>Your registration is successful in CRM, now you can create your password by clicking this button. <br><a href="' . $link . '" class="f-fallback button button--green" target="_blank">Create password</a><br>If you did not request this, please ignore. Link valid for 24 hours.<br>' . $link;
+
+                $this->send_mail($this->input->post('email'), $message, 'Generate Your Password');
+            }
+
+        } else {
+            // Update existing user
+            $user_id = $this->uri->segment(4);
+            $update_data = ['name' => $name];
+            if ($encrypted_password) {
+                $update_data['password'] = $encrypted_password;
+            }
+            $this->Common_Model->update('users', $update_data, ['id' => $user_id]);
+        }
+
+        // INSERT OR UPDATE USER_DETAILS TABLE
+        $data2 = [
+            'user_id'    => $user_id,
+            'email'      => $this->input->post('email'),
+            'mobile_no'  => $this->input->post('mobile_no'),
+            'branch'     => $this->input->post('branch'),
+            'parent_id'  => $parent_id,
+            'first_name' => $this->input->post('first_name'),
+            'last_name'  => $this->input->post('last_name'),
+            'father_name'=> $this->input->post('father_name'),
+            'dob'        => $dob,
+            'gender'     => $this->input->post('gender'),
+            'address'    => $this->input->post('address'),
+        ];
+
+        if (!$this->uri->segment(4)) {
+            $this->Common_Model->insert('user_details', $data2);
+            $this->session->set_flashdata('success', 'User successfully created! <br>' . ($password ? '' : 'An email sent to user email id for create password!'));
+        } else {
+            $this->Common_Model->update('user_details', $data2, ['user_id' => $user_id]);
+            $this->session->set_flashdata('success', 'User successfully updated!');
+        }
+
+        redirect(base_url() . 'TeamStructure/list/' . $role_id);
+
+    } else {
+        // SHOW FORM
+        $data['title'] = $role->name . '/Add';
+        $data['heading'] = $role->name . ' Add';
         $data['user'] = $this->session->userdata('user_info');
         $data['data'] = "";
-        if ($this->uri->segment(4))
-        {
-            $data['data']  = $this->Common_Model->get_row('user_details','*',array('user_id'=>$this->uri->segment(4)));
-            $data['data2'] = $this->Common_Model->get_row('users','*',array('id'=>$this->uri->segment(4)));
+
+        if ($this->uri->segment(4)) {
+            $data['data']  = $this->Common_Model->get_row('user_details', '*', ['user_id' => $this->uri->segment(4)]);
+            $data['data2'] = $this->Common_Model->get_row('users', '*', ['id' => $this->uri->segment(4)]);
         }
-        $this->load->view('add',$data);
+
+        $this->load->view('add', $data);
     }
 }
+
+/**
+ * AES-256-CBC encrypt/decrypt
+ */
+private function encrypt_decrypt($action, $string) {
+    $output = false;
+    $encrypt_method = "AES-256-CBC";
+    $secret_key = 'e9b8b1596fbb58954dfae1fd6baa8dea';
+    $secret_iv  = 'e9b8b1596fbb58954dfae1fd6baa8dea';
+
+    $key = hash('sha256', $secret_key);
+    $iv = substr(hash('sha256', $secret_iv), 0, 16);
+
+    if ($action == 'encrypt') {
+        $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
+        $output = base64_encode($output);
+    } elseif ($action == 'decrypt') {
+        $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
+    }
+    return $output;
+}
+
 
 
 
@@ -342,4 +386,24 @@ public function uploads_file($path,$fileName)
           
           //echo $this->send_mail('shyam.sakura0921@gmail.com','hello','testing');
       }
+     public function delete_user($id)
+{
+    $role_id = $this->uri->segment(4); // get role_id from 4th segment
+
+    if($id){
+        // Delete from user_details first
+        $this->Common_Model->delete('user_details', array('user_id' => $id));
+
+        // Delete from users table
+        $this->Common_Model->delete('users', array('id' => $id));
+
+        $this->session->set_flashdata('success','User deleted successfully.');
+    } else {
+        $this->session->set_flashdata('error','Invalid User ID.');
+    }
+
+    // Redirect back to the list page of the same role
+    redirect(base_url('TeamStructure/list/'.$role_id));
+}
+
 }

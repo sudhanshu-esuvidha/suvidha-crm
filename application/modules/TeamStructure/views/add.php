@@ -53,6 +53,17 @@
 															<label>Email<span class="text-danger">*</span></label>
 															<input  value="<?php echo $data->email; ?>"  type="email" class="form-control" name="email" required >
 														</div>
+<div class="form-group row mb-3">
+    <div class="col-md-6 mb-2">
+        <label>Password<?php if(!$data) echo '<span class="text-danger">*</span>'; ?></label>
+        <input type="password" class="form-control" name="password" <?php if(!$data) echo 'required'; ?> placeholder="Enter password">
+    </div>
+
+    <div class="col-md-6 mb-2">
+        <label>Confirm Password<?php if(!$data) echo '<span class="text-danger">*</span>'; ?></label>
+        <input type="password" class="form-control" name="confirm_password" <?php if(!$data) echo 'required'; ?> placeholder="Confirm password">
+    </div>
+</div>
 
 														<div class="col-md-6 mb-2">
 															<label>Branch<span class="text-danger">*</span></label>
@@ -111,6 +122,7 @@
 															<textarea class="form-control" name="address"><?php echo $data->address; ?></textarea>
 														</div>
 													</div>
+
 
 													<div class="form-group row mb-3">
 														<div class="col-md-12">
