@@ -9,6 +9,9 @@
 			<a href="<?php echo base_url(); ?>Company"><i class="la la-building"></i> <span> Companies</span> </a>
 		</li>
 		<li >
+			<a href="<?php echo base_url(); ?>Task"><i class="la la-building"></i> <span> Task Management</span> </a>
+		</li>
+		<li >
 			<a href="<?php echo base_url(); ?>Leads/list"><i class="la la-chart-area"></i> <span> Leads </span></a>
 		</li>
 
