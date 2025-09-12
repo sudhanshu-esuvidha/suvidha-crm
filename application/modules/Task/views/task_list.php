@@ -97,159 +97,174 @@
 </div>
 
 <!-- Add Task Modal -->
+<!-- Add Task Modal -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg"> <!-- wider modal -->
         <div class="modal-content">
             <form action="<?= base_url('Task/add'); ?>" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Task</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+               <!--  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-tasks"></i> Add Task</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div> -->
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Title</label>
-                        <input type="text" name="title" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Lead</label>
-                        <select name="lead_id" class="form-control" required>
-                            <option value="">Select Lead</option>
-                            <?php foreach($leads as $lead): ?>
-                                <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Start Date</label>
-                        <input type="datetime-local" name="start_date" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>End Date</label>
-                        <input type="datetime-local" name="end_date" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Assign To</label>
-                        <select name="assigned_to" class="form-control" required>
-                            <option value="">Select User</option>
-                            <?php foreach($users as $user): ?>
-                                <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Observer</label>
-                        <select name="observer" class="form-control">
-                            <option value="">Select Observer</option>
-                            <?php foreach($users as $user): ?>
-                                <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Priority</label>
-                        <select name="priority" class="form-control" required>
-                            <option value="">Select Priority</option>
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="active" id="activeTask" value="1">
-                        <label class="form-check-label" for="activeTask">Active Task</label>
-                    </div>
-                    <div class="mb-3">
-                        <label>Description</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Lead</label>
+                            <select name="lead_id" class="form-control" required>
+                                <option value="">Select Lead</option>
+                                <?php foreach($leads as $lead): ?>
+                                    <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Start Date</label>
+                            <input type="datetime-local" name="start_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">End Date</label>
+                            <input type="datetime-local" name="end_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Assign To</label>
+                            <select name="assigned_to" class="form-control" required>
+                                <option value="">Select User</option>
+                                <?php foreach($users as $user): ?>
+                                    <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Observer</label>
+                            <select name="observer" class="form-control">
+                                <option value="">Select Observer</option>
+                                <?php foreach($users as $user): ?>
+                                    <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-control" required>
+                                <option value="">Select Priority</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12 d-flex align-items-center">
+                            <div class="form-check mt-4">
+                                <input type="checkbox" class="form-check-input" name="active" id="activeTask" value="1">
+                                <label class="form-check-label" for="activeTask">Active Task</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Task</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Task</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 
 <!-- Edit Task Modal -->
+<!-- Edit Task Modal -->
 <div class="modal fade" id="editTaskModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="<?= base_url('Task/update'); ?>" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Task</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+             <!--    <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Task</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div> -->
                 <div class="modal-body">
                     <input type="hidden" name="id" id="edit_id">
-                    <div class="mb-3">
-                        <label>Title</label>
-                        <input type="text" name="title" id="edit_title" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Lead</label>
-                        <select name="lead_id" id="edit_lead" class="form-control" required>
-                            <option value="">Select Lead</option>
-                            <?php foreach($leads as $lead): ?>
-                                <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Start Date</label>
-                        <input type="datetime-local" name="start_date" id="edit_start_date" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>End Date</label>
-                        <input type="datetime-local" name="end_date" id="edit_end_date" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Assign To</label>
-                        <select name="assigned_to" id="edit_assigned_to" class="form-control" required>
-                            <option value="">Select User</option>
-                            <?php foreach($users as $user): ?>
-                                <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Observer</label>
-                        <select name="observer" id="edit_observer" class="form-control">
-                            <option value="">Select Observer</option>
-                            <?php foreach($users as $user): ?>
-                                <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Priority</label>
-                        <select name="priority" id="edit_priority" class="form-control" required>
-                            <option value="">Select Priority</option>
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="active" id="edit_active" value="1">
-                        <label class="form-check-label" for="edit_active">Active Task</label>
-                    </div>
-                    <div class="mb-3">
-                        <label>Description</label>
-                        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" id="edit_title" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Lead</label>
+                            <select name="lead_id" id="edit_lead" class="form-control" required>
+                                <option value="">Select Lead</option>
+                                <?php foreach($leads as $lead): ?>
+                                    <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Start Date</label>
+                            <input type="datetime-local" name="start_date" id="edit_start_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">End Date</label>
+                            <input type="datetime-local" name="end_date" id="edit_end_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Assign To</label>
+                            <select name="assigned_to" id="edit_assigned_to" class="form-control" required>
+                                <option value="">Select User</option>
+                                <?php foreach($users as $user): ?>
+                                    <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Observer</label>
+                            <select name="observer" id="edit_observer" class="form-control">
+                                <option value="">Select Observer</option>
+                                <?php foreach($users as $user): ?>
+                                    <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" id="edit_priority" class="form-control" required>
+                                <option value="">Select Priority</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12 d-flex align-items-center">
+                            <div class="form-check mt-4">
+                                <input type="checkbox" class="form-check-input" name="active" id="edit_active" value="1">
+                                <label class="form-check-label" for="edit_active">Active Task</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success">Update Task</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Update Task
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- JS for Edit -->
+<!-- JS for Edit -->`
 <script>
 function editTask(id) {
     fetch("<?= base_url('Task/get/'); ?>" + id)

@@ -21,7 +21,7 @@
 								<span  class="badge bg-danger"><a download="" href="<?php echo base_url(); ?>lead_sample_csv.csv" >
 									<i class="fas fa-download "></i> Download Sample
 								</a></span>
-                        <?php if($user->role==1){ ?>
+                        <?php if($user->role==1 || $user->role==2){ ?>
 								<span onclick="assign_to()" class="badge bg-info">
 									<i class="fas fa-users "></i> Assign To
 								</span>
@@ -31,7 +31,7 @@
 							
 						</div>
 					<div class="row mt-2">
-						<?php if($user->role==1){ ?>
+						<?php if($user->role==1 || $user->role==2){ ?>
 						<div class="col-md-12">
 						
 								<?php $assign_to=get_all_list('users'); ?>

@@ -8,11 +8,11 @@ class Mastertable extends MY_Controller
         parent::__construct();
         $this->load->database();
         $this->load->model('Common_Model');
-		$this->load->library('session');
-		if(!$this->session->userdata('site_userid'))
-		{
-			redirect('/');
-		}	   
+		  $this->load->library('session');
+
+        if(!$this->session->userdata('site_userid')) { 
+            redirect('/');  
+        }
 	}
 	
     public function uploads_file($path,$fileName)
@@ -53,13 +53,17 @@ class Mastertable extends MY_Controller
           }
         }
 	}
+
 	public function list()
 	{
-		
 		$type=$this->uri->segment(3);
+		$parent_id=$this->session->userdata('user_info')->id;
+
 		$data['type']=$type;
+		$data['parent_id']=$parent_id;
 		$data['user']=$this->session->userdata('user_info');
-		$data['result']=get_all_list('master_table',' where type="'.$type.'" order by id desc');
+
+		$data['result']=get_all_list('master_table',' where type="'.$type.'" and parent_id="'.$parent_id.'" order by id desc');
 		$data['heading']=$type.' List';
 		$this->load->view('list',$data);  
 	}
@@ -68,11 +72,17 @@ class Mastertable extends MY_Controller
     public function add()
 	{
 		$type=$this->uri->segment(3);
+		$parent_id=$this->session->userdata('user_info')->id;
 		$id=$this->input->post('leadid');
+
 		if($this->input->post())
 		{	    
-		   
-			$data=array('name'=>$this->input->post('name'),'type'=>$type);
+			$data=array(
+				'name'=>$this->input->post('name'),
+				'type'=>$type,
+				'parent_id'=>$parent_id
+			);
+
 			if($id)
 			{
 				$this->Common_Model->update('master_table',$data,array('id'=>$id));
@@ -86,16 +96,21 @@ class Mastertable extends MY_Controller
 					$this->session->set_flashdata('success','Data Successfully added!');     
 				}
 			}
-			redirect(base_url().'Mastertable/list/'.$type);
+			redirect(base_url().'Mastertable/list/'.$type.'/'.$parent_id);
 		}
 		else
 		{
 			$data['type']=$type;
+			$data['parent_id']=$parent_id;
 			$data['data']=array();
 			if($id)
 			{
 				$data['data']=$this->Common_Model->get_row('master_table','*',array('id'=>$id));
 			}
+
+			// fetch parents for dropdown
+			$data['parents']=$this->Common_Model->get_result('master_table','*',array('type'=>$type,'parent_id'=>0,'status'=>1));
+
 			$data['user']=$this->session->userdata('user_info');
 			$this->load->view('add',$data);  
 		}
@@ -105,9 +120,11 @@ class Mastertable extends MY_Controller
 	{
 		$type=$this->uri->segment(3);
 		$id=$this->uri->segment(4);
+		$parent_id=$this->uri->segment(5) ?? 0;
+
 		$this->Common_Model->delete('master_table',array('id'=>$id));
 		$this->session->set_flashdata('success','Data Successfully deleted!');
-		redirect(base_url().'Mastertable/list/'.$type);
+		redirect(base_url().'Mastertable/list/'.$type.'/'.$parent_id);
 	}
 	
 	
@@ -163,7 +180,6 @@ class Mastertable extends MY_Controller
 			'discount'=>$this->input->post('discount'),
 			'updated_at'=>$updated_at,
 			'qty_variable_name'=>$this->input->post('qty_variable_name'),
-
 			);
 			if($id)
 			{
@@ -180,35 +196,35 @@ class Mastertable extends MY_Controller
 			}
 
 			///day wise calculation
-       if($this->input->post('is_day_wise_calculation'))
-       {
-       	$this->Common_Model->delete('service_type_day_wise_calculation',array('service_type_id'=>$id));
-       	$day_from=$this->input->post('day_from');
-       	$day_to=$this->input->post('day_to');
-       	$rate_coastal=$this->input->post('rate_coastal');
-       	$rate_foriegn=$this->input->post('rate_foriegn');
-       	$service_type_name=$this->input->post('day_service_type_name');
-       	foreach($day_from as $key=> $row)
-       	{
-          $data=array(
-                'day_from'=>$day_from[$key],
-                'day_to'=>$day_to[$key],
-                'rate_coastal'=>$rate_coastal[$key],
-                'rate_foriegn'=>$rate_foriegn[$key],
-                'service_type_id'=>$id,
-                'service_type_name'=>$service_type_name[$key]
-       	            );
-         
-          $this->Common_Model->insert('service_type_day_wise_calculation',$data);
-          
-       	}
+	       if($this->input->post('is_day_wise_calculation'))
+	       {
+	       	$this->Common_Model->delete('service_type_day_wise_calculation',array('service_type_id'=>$id));
+	       	$day_from=$this->input->post('day_from');
+	       	$day_to=$this->input->post('day_to');
+	       	$rate_coastal=$this->input->post('rate_coastal');
+	       	$rate_foriegn=$this->input->post('rate_foriegn');
+	       	$service_type_name=$this->input->post('day_service_type_name');
+	       	foreach($day_from as $key=> $row)
+	       	{
+	          $data=array(
+	                'day_from'=>$day_from[$key],
+	                'day_to'=>$day_to[$key],
+	                'rate_coastal'=>$rate_coastal[$key],
+	                'rate_foriegn'=>$rate_foriegn[$key],
+	                'service_type_id'=>$id,
+	                'service_type_name'=>$service_type_name[$key]
+	       	            );
+	         
+	          $this->Common_Model->insert('service_type_day_wise_calculation',$data);
+	          
+	       	}
 
-       	$this->Common_Model->update('tariff_calculator_service_type',array('is_day_wise_calculation'=>1),array('id'=>$id));
-       }
-       else
-       {
-       	$this->Common_Model->update('tariff_calculator_service_type',array('is_day_wise_calculation'=>0),array('id'=>$id));
-       }
+	       	$this->Common_Model->update('tariff_calculator_service_type',array('is_day_wise_calculation'=>1),array('id'=>$id));
+	       }
+	       else
+	       {
+	       	$this->Common_Model->update('tariff_calculator_service_type',array('is_day_wise_calculation'=>0),array('id'=>$id));
+	       }
       
 			///day wise calculation
 			redirect(base_url().'Mastertable/list_service_type');
@@ -228,14 +244,9 @@ class Mastertable extends MY_Controller
 	
 	public function get_main_service()
 	{
-
 		$value=$this->input->post('value');
-		
 		$data['result']=$this->Common_Model->get_result('master_table','*',array('parent_id'=>$value,'status'=>1));
-		
-		
-	
 		echo $this->load->view('add/load_data',$data,true);
 	}
 
-}
+}   

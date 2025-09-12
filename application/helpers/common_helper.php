@@ -34,12 +34,31 @@ function get_user($user_id)
 }
 
 
-function get_all_list($table,$where='')
+function get_all_list($table, $where = '')
 {
-     $CI =& get_instance();
-     $query = $CI->db->query("select * from $table $where ");  
-         return $query->result(); 
+    $CI =& get_instance();
+
+    // Get current user's id from session
+    $parent_id = $CI->session->userdata('user_info')->id ?? null;
+
+    // If table is 'users', automatically add parent_id condition
+    if ($table === 'users' && $parent_id) {
+        if ($where) {
+            // Check if $where already has 'WHERE'
+            if (stripos(trim($where), 'where') === 0) {
+                $where .= " AND parent_id=" . intval($parent_id);
+            } else {
+                $where .= " WHERE parent_id=" . intval($parent_id);
+            }
+        } else {
+            $where = "WHERE parent_id=" . intval($parent_id);
+        }
+    }
+
+    $query = $CI->db->query("SELECT * FROM $table $where");
+    return $query->result();
 }
+
 function get_row($table,$where='')
 {
      $CI =& get_instance();

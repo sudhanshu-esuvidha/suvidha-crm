@@ -8,11 +8,11 @@ class TeamStructure extends MY_Controller
         parent::__construct();
         $this->load->database();
         $this->load->model('Common_Model');
-	  $this->load->library('session');
-	  if(!$this->session->userdata('site_userid'))
-	   {
-	  	redirect('/');
-	   }
+	    $this->load->library('session');
+
+        if(!$this->session->userdata('site_userid')) { 
+            redirect('/');  
+        }
 	   
       }
       public function list()
@@ -37,13 +37,20 @@ public function add()
 
         $parent_id = $this->session->userdata('user_info')->id;
 
-        // Check 5-user limit for new users
-        if (!$this->uri->segment(4)) {
+        // -----------------------------
+        // DYNAMIC SUBUSER LIMIT CHECK
+        // -----------------------------
+        if (!$this->uri->segment(4)) { // only for new users
+            // Get allowed subusers count from parent
+            $parent_info = $this->Common_Model->get_row('users', 'subusers', ['id' => $parent_id]);
+            $allowed_subusers = $parent_info->subusers ?? 5; // default 5 if not set
+
+            // Count current users under parent
             $this->db->where('parent_id', $parent_id);
             $child_count = $this->db->count_all_results('user_details');
 
-            if ($child_count >= 5) {
-                $this->session->set_flashdata('error', 'You can create a maximum of 5 users under your account.');
+            if ($child_count >= $allowed_subusers) {
+                $this->session->set_flashdata('error', 'You can create a maximum of ' . $allowed_subusers . ' users under your account.');
                 redirect(base_url() . 'TeamStructure/add/' . $role_id);
                 return;
             }
@@ -58,7 +65,6 @@ public function add()
             return;
         }
 
-        // Name
         $name = $this->input->post('first_name') . ' ' . $this->input->post('last_name');
 
         // PASSWORD HANDLING
@@ -79,9 +85,10 @@ public function add()
         if (!$this->uri->segment(4)) {
             // New user
             $user_data = [
-                'username' => $this->input->post('email'),
-                'role'     => $role_id,
-                'name'     => $name
+                'username'  => $this->input->post('email'),
+                'role'      => $role_id,
+                'parent_id' => $parent_id,
+                'name'      => $name
             ];
             if ($encrypted_password) {
                 $user_data['password'] = $encrypted_password;
@@ -153,6 +160,7 @@ public function add()
         $this->load->view('add', $data);
     }
 }
+
 
 /**
  * AES-256-CBC encrypt/decrypt

@@ -2,132 +2,153 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Leads extends MY_Controller
- {
-	public function __construct()
-	{
+{
+    public function __construct()
+    {
         parent::__construct();
         $this->load->database();
         $this->load->model('Common_Model');
-	  $this->load->library('session');
-	  if(!$this->session->userdata('site_userid'))
-	   {
-	  	redirect('/');
-	   }
-	   
-      }
-      public function list()
-      {
+        $this->load->library('session');
+        if(!$this->session->userdata('site_userid'))
+        {
+            redirect('/');
+        }
+    }
 
-      $where="";
-      if($_GET['assign_to'])
-      {
-        $where.=" and assign_to=".$_GET['assign_to'];
-      }
-      if($_GET['status'])
-      {
-        $where.=" and status_id=".$_GET['status'];
-      }
-      
-      $data['total']=get_total_of_table('leads',' where id>0 '.$where);
-	    $data['result']=get_all_list('leads',' where id>0 '.$where.'  order by id desc LIMIT 0,50 ');
-	    $data['title']="Leads/list";
-        $data['heading']="Lead List";
-	    $data['user']=$this->session->userdata('user_info');
-   	    $this->load->view('list',$data);
-      }
-      public function pending_followup()
-      {
-           $user=$this->session->userdata('user_info');
+    public function list()
+{
+    $user = $this->session->userdata('user_info');
+    $user_id = $user->id;
+
+    // Initialize WHERE clause
+    $where = " AND id > 0";
+
+    // If the user is a parent (check subusers or role)
+    // Let's assume 'is_parent' column or role check; adjust as per your DB
+    if (!empty($user->is_parent) && $user->is_parent == 1) {
+        // Parent sees all leads of their children
+        $where .= " AND parent_id = {$user_id}";
+    } else {
+        // Regular user sees only leads assigned to them
+        $where .= " AND assign_to = {$user_id}";
+    }
+
+    // Optional GET filters
+    if (!empty($_GET['assign_to'])) {
+        $assign_to = intval($_GET['assign_to']);
+        $where .= " AND assign_to = {$assign_to}";
+    }
+    if (!empty($_GET['status'])) {
+        $status = intval($_GET['status']);
+        $where .= " AND status_id = {$status}";
+    }
+
+    $data['total']  = get_total_of_table('leads', ' WHERE 1 ' . $where);
+    $data['result'] = get_all_list('leads', ' WHERE 1 ' . $where . ' ORDER BY id DESC LIMIT 0,50');
+    $data['title']  = "Leads/list";
+    $data['heading']= "Lead List";
+    $data['user']   = $user;
+
+    $this->load->view('list', $data);
+}
+
+
+    public function pending_followup()
+    {
+        $user=$this->session->userdata('user_info');
         $date=date("Y-m-d");
-        $data['result']=get_all_list('leads',' where cast(next_followup as date)<"'.$date.'" and assign_to='.$user->id.' order by id desc');
+        $data['result']=get_all_list('leads',' where cast(next_followup as date)<"'.$date.'" and assign_to='.$user->id.' and parent_id='.$user->id.' order by id desc');
         $data['title']="Leads/list";
         $data['heading']="Pending Followup";
-        $data['user']=$this->session->userdata('user_info');
+        $data['user']=$user;
         $this->load->view('list',$data);
-      }
-      public function today_followup()
-      {
-          $user=$this->session->userdata('user_info');
+    }
+
+    public function today_followup()
+    {
+        $user=$this->session->userdata('user_info');
         $date=date("Y-m-d");
-        $data['result']=get_all_list('leads',' where cast(next_followup as date)="'.$date.'" and assign_to='.$user->id.' order by id desc ');
+        $data['result']=get_all_list('leads',' where cast(next_followup as date)="'.$date.'" and assign_to='.$user->id.' and parent_id='.$user->id.' order by id desc');
         $data['title']="Leads/list";
         $data['heading']="Today Followup";
-        $data['user']=$this->session->userdata('user_info');
+        $data['user']=$user;
         $this->load->view('list',$data);
-      }
+    }
 
-      public function tomorrow_followup()
-      {
-           $user=$this->session->userdata('user_info');
+    public function tomorrow_followup()
+    {
+        $user=$this->session->userdata('user_info');
         $date=date("Y-m-d");
         $date=date('Y-m-d', strtotime($date.' + 1 day'));
-        $data['result']=get_all_list('leads',' where cast(next_followup as date)="'.$date.'" and assign_to='.$user->id.' order by id desc');
+        $data['result']=get_all_list('leads',' where cast(next_followup as date)="'.$date.'" and assign_to='.$user->id.' and parent_id='.$user->id.' order by id desc');
         $data['title']="Leads/list";
         $data['heading']="Tomorrow Followup";
-        $data['user']=$this->session->userdata('user_info');
+        $data['user']=$user;
         $this->load->view('list',$data);
-      }
-      public function add()
-     {
-        	if($this->input->post())
-        	{
-          
-         $data=array(
-            'contact_name'=>$this->input->post('contact_name'),
-            'mobile_no'=>$this->input->post('mobile_no'),
-            'email'=>$this->input->post('email'),
-            'owner_name'=>$this->input->post('owner_name'),
-            'branch_id'=>$this->input->post('branch_id'),
-            'source_id'=>$this->input->post('source_id'),
-            'priority_id'=>$this->input->post('priority_id'),
-            'status_id'=>$this->input->post('status_id'),
-            'refrence'=>$this->input->post('refrence'),
-            'description'=>$this->input->post('description'),
-            'service_id'=>$this->input->post('service_id'),
-            'company_name'=>$this->input->post('company_name'),
-            'address'=>$this->input->post('address'),
-            'business_category'=>$this->input->post('business_category'),
-            'created_by'=>$this->session->userdata('site_userid'),
-            'remark'=>$this->input->post('remark'),
-            'assign_to'=>$this->input->post('assign_to'),
-                     );
-           $lead_id=$this->Common_Model->insert('leads',$data);  
+    }
 
-           $data=array(
-                     'lead_id'=>$lead_id,
-                     'status'=>$this->input->post('status_id'),
-                     'created_by'=>$this->session->userdata('site_userid'),
-                     'remark'=>$this->input->post('remark'),
-                       ); 
+    public function add()
+    {
+        if($this->input->post())
+        {
+            $user=$this->session->userdata('user_info');
 
+            $data=array(
+                'contact_name'=>$this->input->post('contact_name'),
+                'mobile_no'=>$this->input->post('mobile_no'),
+                'email'=>$this->input->post('email'),
+                'owner_name'=>$this->input->post('owner_name'),
+                'parent_id'=>$user->id,  // ✅ parent id saved
+                'branch_id'=>$this->input->post('branch_id'),
+                'source_id'=>$this->input->post('source_id'),
+                'priority_id'=>$this->input->post('priority_id'),
+                'status_id'=>$this->input->post('status_id'),
+                'refrence'=>$this->input->post('refrence'),
+                'description'=>$this->input->post('description'),
+                'service_id'=>$this->input->post('service_id'),
+                'company_name'=>$this->input->post('company_name'),
+                'address'=>$this->input->post('address'),
+                'business_category'=>$this->input->post('business_category'),
+                'created_by'=>$this->session->userdata('site_userid'),
+                'remark'=>$this->input->post('remark'),
+                'assign_to'=>$this->input->post('assign_to'),
+            );
+
+            $lead_id=$this->Common_Model->insert('leads',$data);  
+
+            $data=array(
+                'lead_id'=>$lead_id,
+                'status'=>$this->input->post('status_id'),
+                'created_by'=>$this->session->userdata('site_userid'),
+                'remark'=>$this->input->post('remark'),
+            ); 
 
             $logid=$this->Common_Model->insert('lead_status_log',$data); 
 
             if($this->input->post('next_followup'))
-           {
-             $next_followup= date("Y-m-d H:i:s ",strtotime($this->input->post('next_followup')));
-            $this->Common_Model->update('leads',array('next_followup'=>$next_followup),array('id'=>$lead_id));
-            $this->Common_Model->update('lead_status_log',array('next_followup'=>$next_followup),array('id'=>$logid));
-           }         
-           $this->session->flashdata('success','Data successfully submitted!');
-           redirect(base_url().'Leads/list');
-                
-               
-                
-        	}
-        	else
-        	{
-        		$data['title']='Leads/Add';
-                $data['heading']='Add Lead';
-        		$data['user']=$this->session->userdata('user_info');
-        		$data['data']="";
-        		if($this->uri->segment(3))
-        		{
-        		    $data['data']=$this->Common_Model->get_row('tours','*',array('id'=>$this->uri->segment(3))); 
-        		}
-        		$this->load->view('add',$data);
-        	}
-     }
+            {
+                $next_followup= date("Y-m-d H:i:s",strtotime($this->input->post('next_followup')));
+                $this->Common_Model->update('leads',array('next_followup'=>$next_followup),array('id'=>$lead_id));
+                $this->Common_Model->update('lead_status_log',array('next_followup'=>$next_followup),array('id'=>$logid));
+            }         
+
+            $this->session->set_flashdata('success','Data successfully submitted!');
+            redirect(base_url().'Leads/list');
+        }
+        else
+        {
+            $data['title']='Leads/Add';
+            $data['heading']='Add Lead';
+            $data['user']=$this->session->userdata('user_info');
+            $data['data']="";
+            if($this->uri->segment(3))
+            {
+                $data['data']=$this->Common_Model->get_row('tours','*',array('id'=>$this->uri->segment(3))); 
+            }
+            $this->load->view('add',$data);
+        }
+    }
+
 public function edit_user()
 {
 	if($this->input->post())
@@ -365,6 +386,7 @@ public function uploads_file($path,$fileName)
                   'address'=>$row[3],
                   'description'=>$row[4],
                   'remark'=>'Fresh Lead',
+                  'parent_id'=>$this->session->userdata('user_info')->id,
                   'assign_to'=>$this->session->userdata('site_userid'),
                   'created_by'=>$this->session->userdata('site_userid'),
                   );

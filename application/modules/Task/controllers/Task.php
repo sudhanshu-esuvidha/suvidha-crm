@@ -18,16 +18,19 @@ class Task extends MY_Controller
     // Task List
     public function index()
     {
-        // Fetch tasks with lead/user names
+        $parent_id = $this->session->userdata('user_info')->id;
+
+        // Fetch tasks with lead/user names based on parent_id
         $this->db->select('t.*, l.contact_name as lead_name, u.username as assigned_name');
         $this->db->from('tasks t');
         $this->db->join('leads l', 'l.id = t.lead_id', 'left');
         $this->db->join('users u', 'u.id = t.assigned_to', 'left');
+        $this->db->where('t.parent_id', $parent_id);
         $tasks = $this->db->get()->result_array();
 
-        // Fetch leads and users for dropdowns
-        $leads = $this->db->get('leads')->result_array();
-        $users = $this->db->get('users')->result_array();
+        // Fetch leads and users for dropdowns (also limited by parent_id)
+        $leads = $this->db->get_where('leads', ['parent_id' => $parent_id])->result_array();
+        $users = $this->db->get_where('users', ['parent_id' => $parent_id])->result_array();
 
         // Prepare data array
         $data = [
@@ -35,7 +38,7 @@ class Task extends MY_Controller
             'leads' => $leads,
             'users' => $users,
             'user'  => $this->session->userdata('user_info'),
-            'url'   => base_url('task')  // needed for page_header.php
+            'url'   => base_url('task')
         ];
 
         // Load view with $data
@@ -45,6 +48,8 @@ class Task extends MY_Controller
     // Add Task
     public function add()
     {
+        $parent_id = $this->session->userdata('user_info')->id;
+
         $data = [
             'title'       => $this->input->post('title'),
             'lead_id'     => $this->input->post('lead_id'),
@@ -52,6 +57,7 @@ class Task extends MY_Controller
             'end_date'    => $this->input->post('end_date'),
             'assigned_to' => $this->input->post('assigned_to'),
             'observer'    => $this->input->post('observer'),
+            'parent_id'   => $parent_id,
             'priority'    => $this->input->post('priority'),
             'active'      => $this->input->post('active') ? 1 : 0,
             'description' => $this->input->post('description'),
@@ -67,7 +73,13 @@ class Task extends MY_Controller
     // Fetch Task for Edit (AJAX)
     public function get($id)
     {
-        $task = $this->db->get_where('tasks', ['id' => $id])->row_array();
+        $parent_id = $this->session->userdata('user_info')->id;
+
+        $task = $this->db->get_where('tasks', [
+            'id' => $id,
+            'parent_id' => $parent_id
+        ])->row_array();
+
         echo json_encode($task);
     }
 
@@ -75,6 +87,8 @@ class Task extends MY_Controller
     public function update()
     {
         $id = $this->input->post('id');
+        $parent_id = $this->session->userdata('user_info')->id;
+
         $data = [
             'title'       => $this->input->post('title'),
             'lead_id'     => $this->input->post('lead_id'),
@@ -89,6 +103,7 @@ class Task extends MY_Controller
         ];
 
         $this->db->where('id', $id);
+        $this->db->where('parent_id', $parent_id); // restrict update
         $this->db->update('tasks', $data);
 
         $this->session->set_flashdata('success', 'Task updated successfully.');
@@ -98,7 +113,10 @@ class Task extends MY_Controller
     // Delete Task
     public function delete($id)
     {
+        $parent_id = $this->session->userdata('user_info')->id;
+
         $this->db->where('id', $id);
+        $this->db->where('parent_id', $parent_id); // restrict delete
         $this->db->delete('tasks');
 
         $this->session->set_flashdata('success', 'Task deleted successfully.');

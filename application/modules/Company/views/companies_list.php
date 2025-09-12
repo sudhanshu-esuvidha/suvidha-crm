@@ -41,6 +41,7 @@
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Address</th>
+                                        <th>SubUsers</th>
                                         <th>Tenure</th>
                                         <th>Expiry Date</th>
                                         <!-- <th>Status</th> -->
@@ -50,13 +51,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $i=1; foreach($companies as $comp): ?>
+                                    <?php $i=1; foreach($users as $comp): ?>
                                     <tr>
                                         <td><?= $i++; ?></td>
                                         <td><?= $comp['company_name']; ?></td>
                                         <td><?= $comp['email']; ?></td>
                                         <td><?= $comp['phone']; ?></td>
                                         <td><?= $comp['address']; ?></td>
+                                        <td><?= $comp['subusers']; ?></td>
                                         <td><?= $comp['tenure']; ?></td>
                                         <td><?= $comp['expiry_date']; ?></td>
                                     <!--     <td>
@@ -81,7 +83,7 @@
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
-                                    <?php if(empty($companies)): ?>
+                                    <?php if(empty($users)): ?>
                                     <tr>
                                         <td colspan="11" class="text-center">No companies found</td>
                                     </tr>
@@ -99,41 +101,48 @@
 
 <!-- Add Company Modal -->
 <div class="modal fade" id="addCompanyModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg"> <!-- Large modal -->
         <div class="modal-content">
-            <form action="<?= base_url('Company/add_company'); ?>" method="post">
+            <form action="<?= base_url('Company/add_company'); ?>" method="post" autocomplete="off">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Company</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Company Name</label>
-                        <input type="text" name="company_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Phone</label>
-                        <input type="text" name="phone" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label>Address</label>
-                        <textarea name="address" class="form-control"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label>Tenure</label>
-                        <select name="tenure" class="form-control" required>
-                            <option value="3">3 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="12">1 Year</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Company Name</label>
+                            <input type="text" name="company_name" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Phone</label>
+                            <input type="text" name="phone" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Password</label>
+                            <input type="password" name="password" class="form-control" required autocomplete="new-password">
+                        </div>
+                        <div class="col-md-12 col-12 mb-3">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" required autocomplete="off"></textarea>
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Access - User Creation</label>
+                            <input type="number" name="subusers" class="form-control" required autocomplete="off" min="1">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Tenure</label>
+                            <select name="tenure" class="form-control" required autocomplete="off">
+                                <option value="">-- Select Tenure --</option>
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12">1 Year</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -145,40 +154,50 @@
     </div>
 </div>
 
+
+
+<!-- Edit Company Modal -->
 <!-- Edit Company Modal -->
 <div class="modal fade" id="editCompanyModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg"> <!-- Large modal like Add Modal -->
         <div class="modal-content">
-            <form action="<?= base_url('Company/update_company'); ?>" method="post">
+            <form action="<?= base_url('Company/update_company'); ?>" method="post" autocomplete="off">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Company</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="edit_id">
-                    <div class="mb-3">
-                        <label>Company Name</label>
-                        <input type="text" name="company_name" id="edit_company_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" id="edit_email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Phone</label>
-                        <input type="text" name="phone" id="edit_phone" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label>Address</label>
-                        <textarea name="address" id="edit_address" class="form-control"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label>Tenure</label>
-                        <select name="tenure" id="edit_tenure" class="form-control" required>
-                            <option value="3">3 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="12">1 Year</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Company Name</label>
+                            <input type="text" name="company_name" id="edit_company_name" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Email</label>
+                            <input type="email" name="email" id="edit_email" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Phone</label>
+                            <input type="text" name="phone" id="edit_phone" class="form-control" required autocomplete="off">
+                        </div>
+                        <div class="col-md-12 col-12 mb-3">
+                            <label>Address</label>
+                            <textarea name="address" id="edit_address" class="form-control" required autocomplete="off"></textarea>
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Access - User Creation</label>
+                            <input type="number" name="subusers" id="edit_subusers" class="form-control" required autocomplete="off" min="1">
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label>Tenure</label>
+                            <select name="tenure" id="edit_tenure" class="form-control" required autocomplete="off">
+                                <option value="">-- Select Tenure --</option>
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12">1 Year</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -201,6 +220,7 @@ function editCompany(id) {
         document.getElementById('edit_email').value = data.email;
         document.getElementById('edit_phone').value = data.phone;
         document.getElementById('edit_address').value = data.address;
+        document.getElementById('edit_subusers').value = data.subusers;
         document.getElementById('edit_tenure').value = data.tenure;
         var modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
         modal.show();
