@@ -16,34 +16,38 @@ class Task extends MY_Controller
     }
 
     // Task List
-    public function index()
-    {
-        $parent_id = $this->session->userdata('user_info')->id;
+   public function index()
+{
+    $user = $this->session->userdata('user_info');
+    $user_id = $user->id;
+    $role_id = $user->role ?? 0; // assuming you have role column (admin/user)
 
-        // Fetch tasks with lead/user names based on parent_id
-        $this->db->select('t.*, l.contact_name as lead_name, u.username as assigned_name');
-        $this->db->from('tasks t');
-        $this->db->join('leads l', 'l.id = t.lead_id', 'left');
-        $this->db->join('users u', 'u.id = t.assigned_to', 'left');
-        $this->db->where('t.parent_id', $parent_id);
-        $tasks = $this->db->get()->result_array();
+    $this->db->select('t.*, l.contact_name as lead_name, u.username as assigned_name');
+    $this->db->from('tasks t');
+    $this->db->join('leads l', 'l.id = t.lead_id', 'left');
+    $this->db->join('users u', 'u.id = t.assigned_to', 'left');
 
-        // Fetch leads and users for dropdowns (also limited by parent_id)
-        $leads = $this->db->get_where('leads', ['parent_id' => $parent_id])->result_array();
-        $users = $this->db->get_where('users', ['parent_id' => $parent_id])->result_array();
-
-        // Prepare data array
-        $data = [
-            'tasks' => $tasks,
-            'leads' => $leads,
-            'users' => $users,
-            'user'  => $this->session->userdata('user_info'),
-            'url'   => base_url('task')
-        ];
-
-        // Load view with $data
-        $this->load->view('task_list', $data);
+    if($role_id == 1){ 
+        // Admin: see tasks created by or assigned to anyone under parent
+        $this->db->where('t.parent_id', $user_id);
+    } else {
+        // Normal user: see only tasks assigned to them or created by them
+        $this->db->group_start();
+        $this->db->where('t.assigned_to', $user_id);
+        $this->db->or_where('t.parent_id', $user_id);
+        $this->db->group_end();
     }
+
+    $tasks = $this->db->get()->result_array();
+
+    $data = [
+        'tasks' => $tasks,
+        'user'  => $user,
+        'url'   => base_url('task')
+    ];
+
+    $this->load->view('task_list', $data);
+}
 
     // Add Task
     public function add()

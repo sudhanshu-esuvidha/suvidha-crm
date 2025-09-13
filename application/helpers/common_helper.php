@@ -41,23 +41,12 @@ function get_all_list($table, $where = '')
     // Get current user's id from session
     $parent_id = $CI->session->userdata('user_info')->id ?? null;
 
-    // If table is 'users', automatically add parent_id condition
-    if ($table === 'users' && $parent_id) {
-        if ($where) {
-            // Check if $where already has 'WHERE'
-            if (stripos(trim($where), 'where') === 0) {
-                $where .= " AND parent_id=" . intval($parent_id);
-            } else {
-                $where .= " WHERE parent_id=" . intval($parent_id);
-            }
-        } else {
-            $where = "WHERE parent_id=" . intval($parent_id);
-        }
-    }
-
-    $query = $CI->db->query("SELECT * FROM $table $where");
+    // print_r($where); die;
+    // Run query
+    $query = $CI->db->query("SELECT * FROM $table $where ");
     return $query->result();
 }
+
 
 function get_row($table,$where='')
 {

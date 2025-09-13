@@ -18,14 +18,74 @@ class TeamStructure extends MY_Controller
       public function list()
       {
         $role_id=$this->uri->segment(3);
+        $parent_id = $this->session->userdata('user_info')->id;
         $role=get_row('master_table',' where id='.$role_id);
-	    $data['result']=get_all_list('users',' where role='.$role_id.' order by id desc');
+	    $data['result']=get_all_list('users',' where role='.$role_id.' AND parent_id = '.$parent_id.' order by id desc');
 	    $data['title']=$role->name."/list";
         $data['heading']=$role->name." List";
 	    $data['user']=$this->session->userdata('user_info');
 	    $data['role']=$role;
    	    $this->load->view('list',$data);
       }
+
+      public function get_user_access() {
+        $user_id = $this->input->post('user_id');
+        $user = get_row('users', ' WHERE id='.$user_id);
+        echo json_encode([
+            'access' => $user->access ?? ''
+        ]);
+      }
+
+
+      public function save_rights()
+        {
+            $this->load->helper('url');
+            $this->load->database();
+
+            $user_id = $this->input->post('user_id');
+            $rights  = $this->input->post('rights'); // Array of selected rights
+
+            if(!$user_id) {
+                $this->session->set_flashdata('error', 'Invalid user.');
+                redirect($_SERVER['HTTP_REFERER']);
+            }
+
+            // Assign access numbers based on rights selected
+            // Define mapping of each right to a number
+            $rights_mapping = [
+                'create'    => 1,
+                'read'      => 2,
+                'update'    => 3,
+                'delete'    => 4,
+                'branches'  => 5,
+                'leads'     => 6,
+                'sources'   => 7,
+                'status'    => 8,
+                'calling'   => 9,
+                'export'    => 10,
+                'import'    => 11,
+                'settings'  => 12
+            ];
+
+            $access_numbers = [];
+            if($rights && is_array($rights)) {
+                foreach($rights as $r) {
+                    if(isset($rights_mapping[$r])) {
+                        $access_numbers[] = $rights_mapping[$r];
+                    }
+                }
+            }
+
+            // Convert array to comma-separated string for storage
+            $access_string = implode(',', $access_numbers);
+
+            // Update the users table
+            $this->db->where('id', $user_id);
+            $this->db->update('users', ['access' => $access_string]);
+
+            $this->session->set_flashdata('success', 'User rights updated successfully!');
+            redirect($_SERVER['HTTP_REFERER']);
+        }
      
 public function add()
 {

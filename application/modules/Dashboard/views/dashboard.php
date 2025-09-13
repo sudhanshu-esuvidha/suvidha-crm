@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg">
 <?php $this->load->view('Template/head',$data); ?>
-
+<style type="text/css">
+    h4{
+        color: white;
+    }
+</style>
 <body>
     <?php  
         $date  = date("Y-m-d");
@@ -23,25 +27,25 @@
                             <!-- 4 Main Cards -->
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient1">
-                                    <h4>Total Users (Today)</h4>
+                                    <h4>Today Follow-ups</h4>
                                     <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient2">
-                                    <h4>Total Leads (Today)</h4>
+                                    <h4>Pending Follow-ups</h4>
                                     <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient3">
-                                    <h4>Pending (Today)</h4>
+                                    <h4>Tommorow Follow-ups</h4>
                                     <p class="number">00</p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient4">
-                                    <h4>Follow-ups (Today)</h4>
+                                    <h4>Total Leads</h4>
                                     <p class="number">00</p>
                                 </div>
                             </div>
