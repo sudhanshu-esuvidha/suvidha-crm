@@ -31,7 +31,7 @@ class Profile extends MY_Controller
         $username = $user['username']; // Assuming username is the email to match
 
         // Fetch company row where email matches username
-        $company = $this->db->get_where('companies', ['email' => $username])->row_array();
+        $company = $this->db->get_where('users', ['email' => $username])->row_array();
 
         $data = [
             'company' => $company,
@@ -59,7 +59,7 @@ class Profile extends MY_Controller
         $username = $user['username'];
 
         // Fetch company row where email matches username
-        $company = $this->db->get_where('companies', ['email' => $username])->row_array();
+        $company = $this->db->get_where('users', ['email' => $username])->row_array();
         if (!$company) {
             $this->session->set_flashdata('error', 'Company not found.');
             redirect('profile');
@@ -97,7 +97,7 @@ class Profile extends MY_Controller
 
         // Update company dynamically
         $this->db->where('id', $company_id);
-        $this->db->update('companies', $data);
+        $this->db->update('users', $data);
 
         $this->session->set_flashdata('success', 'Profile updated successfully.');
         redirect('profile');

@@ -21,4 +21,6 @@ $route['india'] = 'Site/page';
 $route['international'] = 'Site';
 $route['search'] = 'Site';
 
+$route['profile'] = 'Profile/index';
+$route['profile/update'] = 'Profile/update';
   

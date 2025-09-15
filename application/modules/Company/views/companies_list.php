@@ -1,232 +1,250 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
-<?php $this->load->view('Template/head',$data); ?>
+<?php $this->load->view('Template/head', $data); ?>
 
 <body>
-<?php  
+    <?php
     $date  = date("Y-m-d");
-    $date2 = date('Y-m-d', strtotime($date.' + 1 day')); 
-?>
-<div class="main-wrapper">
-    <div class="header">
-        <?php $this->load->view('Template/header',$data); ?>
-        <div class="page-wrapper">
-            <div class="content container-fluid pb-0">
+    $date2 = date('Y-m-d', strtotime($date . ' + 1 day'));
+    ?>
+    <div class="main-wrapper">
+        <div class="header">
+            <?php $this->load->view('Template/header', $data); ?>
+            <div class="page-wrapper">
+                <div class="content container-fluid pb-0">
 
-                <?php $this->load->view('Template/page_header',$data); ?>
+                    <?php $this->load->view('Template/page_header', $data); ?>
 
-                <div class="row">
-                    <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-12">
 
-                        <!-- Page Title + Add Button -->
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="mb-0">Company Management</h4>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                <i class="fas fa-plus"></i> Add Company
-                            </button>
-                        </div>
+                            <!-- Page Title + Add Button -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">Company Management</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                    <i class="fas fa-plus"></i> Add Company
+                                </button>
+                            </div>
 
-                        <!-- Success message -->
-                        <?php if($this->session->flashdata('success')): ?>
-                            <div class="alert alert-success"><?= $this->session->flashdata('success'); ?></div>
-                        <?php endif; ?>
+                            <!-- Success message -->
+                            <?php if ($this->session->flashdata('success')): ?>
+                                <div class="alert alert-success"><?= $this->session->flashdata('success'); ?></div>
+                            <?php endif; ?>
 
-                        <!-- Company Table -->
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Company Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Address</th>
-                                        <th>SubUsers</th>
-                                        <th>Tenure</th>
-                                        <th>Expiry Date</th>
-                                        <!-- <th>Status</th> -->
-                                        <th>Created</th>
-                                        <th>Updated</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php $i=1; foreach($users as $comp): ?>
-                                    <tr>
-                                        <td><?= $i++; ?></td>
-                                        <td><?= $comp['company_name']; ?></td>
-                                        <td><?= $comp['email']; ?></td>
-                                        <td><?= $comp['phone']; ?></td>
-                                        <td><?= $comp['address']; ?></td>
-                                        <td><?= $comp['subusers']; ?></td>
-                                        <td><?= $comp['tenure']; ?></td>
-                                        <td><?= $comp['expiry_date']; ?></td>
-                                    <!--     <td>
-                                            <?php if($comp['status']==1): ?>
+                            <!-- Company Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Company Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>SubUsers</th>
+                                            <th>Tenure</th>
+                                            <th>Expiry Date</th>
+                                            <!-- <th>Status</th> -->
+                                            <th>Created</th>
+                                            <th>Updated</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1;
+                                        foreach ($users as $users): ?>
+                                            <tr>
+                                                <td><?= $i++; ?></td>
+                                                <td><?= $users['company_name']; ?></td>
+                                                <td><?= $users['email']; ?></td>
+                                                <td><?= $users['phone']; ?></td>
+                                                <td><?= $users['address']; ?></td>
+                                                <td><?= $users['subusers']; ?></td>
+                                                <td><?= $users['tenure']; ?></td>
+                                                <td><?= $users['expiry_date']; ?></td>
+                                                <!--     <td>
+                                            <?php if ($users['status'] == 1): ?>
                                                 <span class="badge bg-success">Active</span>
                                             <?php else: ?>
                                                 <span class="badge bg-danger">Inactive</span>
                                             <?php endif; ?>
                                         </td> -->
-                                        <td><?= $comp['created_at']; ?></td>
-                                        <td><?= $comp['updated_at']; ?></td>
-                                        <td>
-                                            <button style="color: black;" class="btn btn-sm btn-warning" 
-                                                onclick="editCompany(<?= $comp['id']; ?>)">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </button>
-                                            <a style="color: white;" href="<?= base_url('Company/delete_company/'.$comp['id']); ?>" 
-                                                class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Are you sure you want to delete this company?')">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                    <?php if(empty($users)): ?>
-                                    <tr>
-                                        <td colspan="11" class="text-center">No companies found</td>
-                                    </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                                <td><?= $users['created_at']; ?></td>
+                                                <td><?= $users['updated_at']; ?></td>
+                                                <td>
+                                                    <button style="color: black;" class="btn btn-sm btn-warning"
+                                                        onclick="editCompany(<?= $users['id']; ?>)">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    <a style="color: white;" href="<?= base_url('Company/delete_company/' . $comp['id']); ?>"
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Are you sure you want to delete this company?')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                        <?php if (empty($users)): ?>
+                                            <tr>
+                                                <td colspan="11" class="text-center">No companies found</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <?php $this->load->view('Template/footer', $data); ?>
             </div>
-            <?php $this->load->view('Template/footer',$data); ?>
         </div>
     </div>
-</div>
 
-<!-- Add Company Modal -->
-<div class="modal fade" id="addCompanyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg"> <!-- Large modal -->
-        <div class="modal-content">
-            <form action="<?= base_url('Company/add_company'); ?>" method="post" autocomplete="off">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Company</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Company Name</label>
-                            <input type="text" name="company_name" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Email</label>
-                            <input type="email" name="email" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Phone</label>
-                            <input type="text" name="phone" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Password</label>
-                            <input type="password" name="password" class="form-control" required autocomplete="new-password">
-                        </div>
-                        <div class="col-md-12 col-12 mb-3">
-                            <label>Address</label>
-                            <textarea name="address" class="form-control" required autocomplete="off"></textarea>
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Access - User Creation</label>
-                            <input type="number" name="subusers" class="form-control" required autocomplete="off" min="1">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Tenure</label>
-                            <select name="tenure" class="form-control" required autocomplete="off">
-                                <option value="">-- Select Tenure --</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12">1 Year</option>
-                            </select>
+    <!-- Add Company Modal -->
+    <div class="modal fade" id="addCompanyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg"> <!-- Large modal -->
+            <div class="modal-content">
+                <form action="<?= base_url('Company/add_company'); ?>" method="post" autocomplete="off">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Company</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Company Name</label>
+                                <input type="text" name="company_name" class="form-control" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Email</label>
+                                <input type="email" name="email" class="form-control" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Phone</label>
+                                <input type="number" name="phone" id="edit_phone"
+                                    class="form-control"
+                                    required
+                                    autocomplete="off"
+                                    pattern="[0-9]{10}"
+                                    maxlength="10"
+                                    minlength="10"
+                                    title="Please enter a valid 10-digit phone number">
+                            </div>
+
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Password</label>
+                                <input type="password" name="password" class="form-control" required autocomplete="new-password">
+                            </div>
+                            <div class="col-md-12 col-12 mb-3">
+                                <label>Address</label>
+                                <textarea name="address" class="form-control" required autocomplete="off"></textarea>
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Access - User Creation</label>
+                                <input type="number" name="subusers" class="form-control" required autocomplete="off" min="1">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Tenure</label>
+                                <select name="tenure" class="form-control" required autocomplete="off">
+                                    <option value="">-- Select Tenure --</option>
+                                    <option value="3m">3 Months</option>
+                                    <option value="6m">6 Months</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Company</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Company</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 
 
-<!-- Edit Company Modal -->
-<!-- Edit Company Modal -->
-<div class="modal fade" id="editCompanyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg"> <!-- Large modal like Add Modal -->
-        <div class="modal-content">
-            <form action="<?= base_url('Company/update_company'); ?>" method="post" autocomplete="off">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Company</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="id" id="edit_id">
-                    <div class="row">
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Company Name</label>
-                            <input type="text" name="company_name" id="edit_company_name" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Email</label>
-                            <input type="email" name="email" id="edit_email" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Phone</label>
-                            <input type="text" name="phone" id="edit_phone" class="form-control" required autocomplete="off">
-                        </div>
-                        <div class="col-md-12 col-12 mb-3">
-                            <label>Address</label>
-                            <textarea name="address" id="edit_address" class="form-control" required autocomplete="off"></textarea>
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Access - User Creation</label>
-                            <input type="number" name="subusers" id="edit_subusers" class="form-control" required autocomplete="off" min="1">
-                        </div>
-                        <div class="col-md-6 col-12 mb-3">
-                            <label>Tenure</label>
-                            <select name="tenure" id="edit_tenure" class="form-control" required autocomplete="off">
-                                <option value="">-- Select Tenure --</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12">1 Year</option>
-                            </select>
+    <!-- Edit Company Modal -->
+    <!-- Edit Company Modal -->
+    <div class="modal fade" id="editCompanyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg"> <!-- Large modal like Add Modal -->
+            <div class="modal-content">
+                <form action="<?= base_url('Company/update_company'); ?>" method="post" autocomplete="off">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Company</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="edit_id">
+                        <div class="row">
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Company Name</label>
+                                <input type="text" name="company_name" id="edit_company_name" class="form-control" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Email</label>
+                                <input type="email" name="email" id="edit_email" class="form-control" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Phone</label>
+                                <input type="number" name="phone" id="edit_phone"
+                                    class="form-control"
+                                    required
+                                    autocomplete="off"
+                                    pattern="[0-9]{10}"
+                                    maxlength="10"
+                                    minlength="10"
+                                    title="Please enter a valid 10-digit phone number">
+                            </div>
+
+                            <div class="col-md-12 col-12 mb-3">
+                                <label>Address</label>
+                                <textarea name="address" id="edit_address" class="form-control" required autocomplete="off"></textarea>
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Access - User Creation</label>
+                                <input type="number" name="subusers" id="edit_subusers" class="form-control" required autocomplete="off" min="1">
+                            </div>
+                            <div class="col-md-6 col-12 mb-3">
+                                <label>Tenure</label>
+                                <select name="tenure" id="edit_tenure" class="form-control" required autocomplete="off">
+                                    <option value="">-- Select Tenure --</option>
+                                    <option value="3m">3 Months</option>
+                                    <option value="6m">6 Months</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success">Update Company</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Update Company</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- JS for Edit -->
-<script>
-function editCompany(id) {
-    fetch("<?= base_url('Company/get_company/'); ?>" + id)
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById('edit_id').value = data.id;
-        document.getElementById('edit_company_name').value = data.company_name;
-        document.getElementById('edit_email').value = data.email;
-        document.getElementById('edit_phone').value = data.phone;
-        document.getElementById('edit_address').value = data.address;
-        document.getElementById('edit_subusers').value = data.subusers;
-        document.getElementById('edit_tenure').value = data.tenure;
-        var modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
-        modal.show();
-    });
-}
-</script>
+    <!-- JS for Edit -->
+    <script>
+        function editCompany(id) {
+            fetch("<?= base_url('Company/get_company/'); ?>" + id)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('edit_id').value = data.id;
+                    document.getElementById('edit_company_name').value = data.company_name;
+                    document.getElementById('edit_email').value = data.email;
+                    document.getElementById('edit_phone').value = data.phone;
+                    document.getElementById('edit_address').value = data.address;
+                    document.getElementById('edit_subusers').value = data.subusers;
+                    document.getElementById('edit_tenure').value = data.tenure;
+                    var modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
+                    modal.show();
+                });
+        }
+    </script>
 
 </body>
+
 </html>

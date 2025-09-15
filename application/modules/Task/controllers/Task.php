@@ -16,22 +16,21 @@ class Task extends MY_Controller
     }
 
     // Task List
-   public function index()
+  public function index()
 {
     $user = $this->session->userdata('user_info');
     $user_id = $user->id;
-    $role_id = $user->role ?? 0; // assuming you have role column (admin/user)
+    $role_id = $user->role ?? 0;
 
+    // Fetch tasks
     $this->db->select('t.*, l.contact_name as lead_name, u.username as assigned_name');
     $this->db->from('tasks t');
     $this->db->join('leads l', 'l.id = t.lead_id', 'left');
     $this->db->join('users u', 'u.id = t.assigned_to', 'left');
 
-    if($role_id == 1){ 
-        // Admin: see tasks created by or assigned to anyone under parent
+    if($role_id == 1){
         $this->db->where('t.parent_id', $user_id);
     } else {
-        // Normal user: see only tasks assigned to them or created by them
         $this->db->group_start();
         $this->db->where('t.assigned_to', $user_id);
         $this->db->or_where('t.parent_id', $user_id);
@@ -40,14 +39,40 @@ class Task extends MY_Controller
 
     $tasks = $this->db->get()->result_array();
 
-    $data = [
-        'tasks' => $tasks,
-        'user'  => $user,
-        'url'   => base_url('task')
-    ];
+    // ✅ Fetch leads only of this user (parent_id = session user_id)
+$leads = $this->db->select('id, contact_name')
+    ->from('leads')
+    ->where('parent_id', $user_id)
+    ->get()
+    ->result_array();
 
-    $this->load->view('task_list', $data);
+// ✅ Fetch users only of this user (parent_id = session user_id)
+$users = $this->db->select('id, username')
+    ->from('users')
+    ->where('parent_id', $user_id)
+    ->get()
+    ->result_array();
+
+// ✅ If you also need observers list separately (same filter)
+$observers = $this->db->select('id, username')
+    ->from('users')
+    ->where('parent_id', $user_id)
+    ->get()
+    ->result_array();
+
+$data = [
+    'tasks'     => $tasks,
+    'user'      => $user,
+    'url'       => base_url('task'),
+    'leads'     => $leads,
+    'users'     => $users,
+    'observers' => $observers
+];
+
+$this->load->view('task_list', $data);
+
 }
+
 
     // Add Task
     public function add()

@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Company extends MY_Controller
 {
@@ -10,8 +10,8 @@ class Company extends MY_Controller
         $this->load->model('Common_Model');
         $this->load->library('session');
 
-        if(!$this->session->userdata('site_userid')) { 
-            redirect('/');  
+        if (!$this->session->userdata('site_userid')) {
+            redirect('/');
         }
     }
 
@@ -78,7 +78,8 @@ class Company extends MY_Controller
         redirect('company');
     }
 
-    private function encrypt_decrypt($action, $string) {
+    private function encrypt_decrypt($action, $string)
+    {
         $output = false;
         $encrypt_method = "AES-256-CBC";
         $secret_key = 'e9b8b1596fbb58954dfae1fd6baa8dea';
@@ -99,7 +100,7 @@ class Company extends MY_Controller
     // Fetch company for editing
     public function get_company($id)
     {
-        $company = $this->db->get_where('users', ['id' => $id, 'role' => 'Admin'])->row_array();
+        $company = $this->db->get_where('users', ['id' => $id, 'role' => '2'])->row_array();
         echo json_encode($company);
     }
 
@@ -118,13 +119,14 @@ class Company extends MY_Controller
         $updated_at   = date('Y-m-d H:i:s');
 
         // Recalculate expiry date
-        if ($tenure == '3') {
+        if ($tenure == '3m') {
             $expiry_date = date('Y-m-d', strtotime("+3 months"));
-        } elseif ($tenure == '6') {
+        } elseif ($tenure == '6m') {
             $expiry_date = date('Y-m-d', strtotime("+6 months"));
-        } else {
+        } elseif ($tenure == '1y') {
             $expiry_date = date('Y-m-d', strtotime("+1 year"));
         }
+
 
         // Update users table
         $userData = [

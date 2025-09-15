@@ -54,7 +54,7 @@
 						</a>
 						<div class="dropdown-menu">
 							<?php if($user->role==1 || $user->role==2){ ?>
-							<a class="dropdown-item" href="<?= base_url('Profile'); ?>">My Profile</a>
+							<a class="dropdown-item" href="<?= base_url('profile'); ?>">My Profile</a>
 							<?php } ?>
 							<a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>
 						</div>
