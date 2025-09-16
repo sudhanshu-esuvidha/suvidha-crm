@@ -28,25 +28,25 @@
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient1">
                                     <h4>Today Follow-ups</h4>
-                                    <p class="number">00</p>
+                                    <p class="number"><?= $today_followups ?? 0 ?></p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient2">
                                     <h4>Pending Follow-ups</h4>
-                                    <p class="number">00</p>
+                                    <p class="number"><?= $pending_followups ?? 0 ?></p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient3">
-                                    <h4>Tommorow Follow-ups</h4>
-                                    <p class="number">00</p>
+                                    <h4>Tomorrow Follow-ups</h4>
+                                    <p class="number"><?= $tomorrow_followups ?? 0 ?></p>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="dashboard-card gradient4">
                                     <h4>Total Leads</h4>
-                                    <p class="number">00</p>
+                                    <p class="number"><?= $total_leads ?? 0 ?></p>
                                 </div>
                             </div>
                         </div>
@@ -97,82 +97,80 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Line Chart
-        new Chart(document.getElementById('lineChart'), {
-            type: 'line',
-            data: {
-                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-                datasets: [
-                    {
-                        label: 'Users',
-                        data: [50, 60, 75, 90, 120, 100, 130],
-                        borderColor: '#2575fc',
-                        backgroundColor: 'rgba(37,117,252,0.2)',
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'Leads',
-                        data: [20, 40, 35, 50, 80, 70, 90],
-                        borderColor: '#38ef7d',
-                        backgroundColor: 'rgba(56,239,125,0.2)',
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            },
-            options: { responsive: true }
-        });
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Line Chart - Users & Leads Weekly
+    new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($weekLabels) ?>,
+            datasets: [
+                {
+                    label: 'Users',
+                    data: <?= json_encode($usersCount) ?>,
+                    borderColor: '#2575fc',
+                    backgroundColor: 'rgba(37,117,252,0.2)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Leads',
+                    data: <?= json_encode($leadsCount) ?>,
+                    borderColor: '#38ef7d',
+                    backgroundColor: 'rgba(56,239,125,0.2)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: { responsive: true }
+    });
 
-        // Bar Chart
-        new Chart(document.getElementById('barChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-                datasets: [
-                    {
-                        label: 'Leads',
-                        data: [10, 20, 15, 30, 25, 35, 40],
-                        backgroundColor: '#f7971e'
-                    }
-                ]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
+    // Bar Chart - Daily Leads Distribution
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($weekLabels) ?>,
+            datasets: [{
+                label: 'Leads',
+                data: <?= json_encode($dailyLeads) ?>,
+                backgroundColor: '#f7971e'
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
 
-        // Doughnut Chart
-        new Chart(document.getElementById('doughnutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Pending','Follow-ups','Closed','Interested'],
-                datasets: [{
-                    data: [45, 20, 30, 25],
-                    backgroundColor: ['#f7971e','#ff416c','#38ef7d','#2575fc']
-                }]
-            },
-            options: { responsive: true }
-        });
+    // Doughnut Chart - Lead Status Breakdown
+    new Chart(document.getElementById('doughnutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: <?= json_encode($statusLabels) ?>,
+            datasets: [{
+                data: <?= json_encode($statusCount) ?>,
+                backgroundColor: ['#f7971e','#ff416c','#38ef7d','#2575fc','#ffbb33','#33b5e5']
+            }]
+        },
+        options: { responsive: true }
+    });
 
-        // Area Chart (using line with fill)
-        new Chart(document.getElementById('areaChart'), {
-            type: 'line',
-            data: {
-                labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'],
-                datasets: [
-                    {
-                        label: 'Growth',
-                        data: [30, 50, 40, 70, 90, 100, 120],
-                        borderColor: '#ff4b2b',
-                        backgroundColor: 'rgba(255,75,43,0.3)',
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            },
-            options: { responsive: true }
-        });
-    </script>
+    // Area Chart - Monthly Growth Trends
+    new Chart(document.getElementById('areaChart'), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($monthLabels) ?>,
+            datasets: [{
+                label: 'Leads',
+                data: <?= json_encode($monthCounts) ?>,
+                borderColor: '#ff4b2b',
+                backgroundColor: 'rgba(255,75,43,0.3)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+
 
     <!-- INTERNAL CSS -->
     <style>
