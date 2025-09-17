@@ -19,7 +19,8 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </a>
         </li>
     <?php endif; ?>
-    <?php if (!$logged_in_user->role == 1): ?>
+    <?php if ($logged_in_user->role  !==  1): ?>
+        
     <li>
         <a href="<?php echo base_url(); ?>Task">
             <i class="la la-tasks"></i> <span>Task Management</span>
@@ -63,7 +64,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </a>
         </li>
     <?php endif; ?>
-  <?php if (!$logged_in_user->role == 1): ?>
+  <?php if ($logged_in_user->role !== 1): ?>
     <?php if ($logged_in_user->role == 1 || $logged_in_user->role == 2 || $logged_in_user->parent_id == 1): ?>
         <li>
             <a href="<?php echo base_url(); ?>Mastertable/list/role">
