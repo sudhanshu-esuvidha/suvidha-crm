@@ -8,7 +8,7 @@
 	<meta name="author" content="">
 	<title>Login</title>
 
-	<link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
+	<link rel="shortcut icon" type="image/x-icon" href="assets/img/fav.png">
 
 	<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/bootstrap.min.css">
 
