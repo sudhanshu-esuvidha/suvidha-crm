@@ -14,6 +14,31 @@ class Task extends MY_Controller
             redirect('/');  
         }
     }
+public function change_status()
+{
+    $parent_id = $this->input->post('parent_id');
+    $task_id   = $this->input->post('task_id');
+    $status_id = $this->input->post('status_id');
+    $remark    = $this->input->post('remark');
+  $status_changed_by    = $this->input->post('status_changed_by');
+    // Optional: fetch status name from master table
+    $status_name = $this->db->get_where('master_table', ['id' => $status_id])->row()->name ?? '';
+
+    $data = [
+        'status_id' => $status_id,
+        'status_name' => $status_name,
+        'remark' => $remark,
+        'status_changed_by' =>  $status_changed_by,
+        'status_changed_at' => date('Y-m-d H:i:s')
+    ];
+
+    $this->db->where('id', $task_id);
+    $this->db->where('parent_id', $parent_id); // restrict update
+    $this->db->update('tasks', $data);
+
+    $this->session->set_flashdata('success', 'Task status updated successfully.');
+    redirect('task');
+}
 
     // Task List
   public function index()
@@ -102,11 +127,10 @@ $this->load->view('task_list', $data);
     // Fetch Task for Edit (AJAX)
     public function get($id)
     {
-        $parent_id = $this->session->userdata('user_info')->id;
+       
 
         $task = $this->db->get_where('tasks', [
-            'id' => $id,
-            'parent_id' => $parent_id
+            'id' => $id
         ])->row_array();
 
         echo json_encode($task);

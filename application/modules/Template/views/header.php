@@ -48,7 +48,7 @@
 
 				<li class="nav-item dropdown has-arrow main-drop">
 					<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-						<span class="user-img"><img src="<?= base_url('assets/img/avatar/avatar-27.jpg'); ?>" alt="User Image">
+						<span class="user-img"><img src="<?= base_url('assets/img/avatar/image.png'); ?>" alt="User Image">
 							<span class="status online"></span></span>
 							<span><?php echo ucfirst($user->name); ?></span>
 						</a>
@@ -65,10 +65,9 @@
 				<div class="dropdown mobile-user-menu">
 					<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></a>
 					<div class="dropdown-menu dropdown-menu-right">
-						<a class="dropdown-item" href="<?php echo base_url(); ?>ComingSoon">My Profile</a>
+						<a class="dropdown-item" href="<?= base_url('profile'); ?>ComingSoon">My Profile</a>
 						<a class="dropdown-item" href="<?php echo base_url(); ?>ComingSoon">Change Password</a>
-						<a class="dropdown-item" href="<?php echo base_url(); ?>/logout">Logout</a>
-					</div>
+<a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>					</div>
 				</div>
 
 			</div>

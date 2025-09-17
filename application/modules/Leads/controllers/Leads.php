@@ -14,8 +14,16 @@ class Leads extends MY_Controller
             redirect('/');
         }
     }
+    public function delete($id)
+{
+    if ($id) {
+        $this->db->delete('leads', ['id' => $id]);
+        $this->session->set_flashdata('success', 'Lead deleted successfully!');
+    }
+    redirect('Leads/list');
+}
 
-    public function list()
+public function list()
 {
     $user = $this->session->userdata('user_info');
     $user_id = $user->id;
@@ -23,13 +31,16 @@ class Leads extends MY_Controller
     // Initialize WHERE clause
     $where = " AND id > 0";
 
-    // If the user is a parent (check subusers or role)
-    // Let's assume 'is_parent' column or role check; adjust as per your DB
-    if (!empty($user->is_parent) && $user->is_parent == 1) {
-        // Parent sees all leads of their children
+    // Check user role
+    if (!empty($user->role) && $user->role == 2) {
+        // Admin: show all leads where parent_id = admin's ID
+        $where .= " AND parent_id = {$user_id}";
+    } 
+    else if (!empty($user->is_parent) && $user->is_parent == 1) {
+        // Parent: show all leads of their children
         $where .= " AND parent_id = {$user_id}";
     } else {
-        // Regular user sees only leads assigned to them
+        // Regular user: show only leads assigned to them
         $where .= " AND assign_to = {$user_id}";
     }
 
@@ -405,14 +416,7 @@ public function uploads_file($path,$fileName)
          $this->Common_Model->update('csv_uploads',array('status'=>1),array('id'=>1));
 
       }
-      public function delete()
-      {
-        $id=$this->uri->segment(3);
-        $this->Common_Model->delete('leads',array('id'=>$id));
-        $this->session->set_flashdata('success','Leads successfully deleted!');
-        redirect(base_url().'Leads/list/');
-
-      }
+  
 
       public function leadsAssign()
       {

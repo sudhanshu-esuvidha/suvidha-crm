@@ -21,9 +21,35 @@
                             <!-- Page Title + Add Button -->
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h4 class="mb-0">Task Management</h4>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                                    <i class="fas fa-plus"></i> Add Task
-                                </button>
+<?php
+$show_add_button = false;
+
+// $user is your logged-in user object from session or DB
+$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row(); // Make sure this is an object, not an ID
+
+// 1️⃣ Check if parent_id = 1 (super-admin)
+if ($logged_in_user->parent_id == 1) {
+    $show_add_button = true;
+} 
+// 2️⃣ Otherwise check access column (comma-separated numbers)
+elseif (!empty($logged_in_user->access)) {
+    $access_array = explode(',', $logged_in_user->access); // e.g., ["1","2","3","4"]
+    if (in_array('1', $access_array)) { // 1 = "create" right
+        $show_add_button = true;
+    }
+}
+?>
+
+<?php if($show_add_button): ?>
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+    <i class="fas fa-plus"></i> Add Task
+</button>
+<?php endif; ?>
+
+
+
+
+
                             </div>
 
                             <!-- Success message -->
@@ -33,60 +59,163 @@
 
                             <!-- Task Table -->
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Title</th>
-                                            <th>Lead</th>
-                                            <th>Assigned To</th>
-                                            <th>Observer</th>
-                                            <th>Priority</th>
-                                            <th>Start Date</th>
-                                            <th>End Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (!empty($tasks)): $i = 1;
-                                            foreach ($tasks as $task): ?>
-                                                <tr>
-                                                    <td><?= $i++; ?></td>
-                                                    <td><?= $task['title']; ?></td>
-                                                    <td><?= $task['lead_name']; ?></td>
-                                                    <td><?= $task['assigned_name']; ?></td>
-                                                    <td><?= $task['observer']; ?></td>
-                                                    <td><?= $task['priority']; ?></td>
-                                                    <td><?= $task['start_date']; ?></td>
-                                                    <td><?= $task['end_date']; ?></td>
-                                                    <td>
-                                                        <?php if ($task['active']): ?>
-                                                            <span class="badge bg-success">Active</span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-secondary">Inactive</span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td>
-                                                        <button style="color: black;" class="btn btn-sm btn-warning"
-                                                            onclick="editTask(<?= $task['id']; ?>)">
-                                                            <i class="fas fa-edit"></i> Edit
-                                                        </button>
-                                                        <a style="color: white;" href="<?= base_url('Task/delete/' . $task['id']); ?>"
-                                                            class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('Are you sure you want to delete this task?')">
-                                                            <i class="fas fa-trash"></i> Delete
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach;
-                                        else: ?>
-                                            <tr>
-                                                <td colspan="10" class="text-center">No tasks found</td>
-                                            </tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+<div class="table-responsive d-none d-md-block">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Lead</th>
+                <th>Assigned To</th>
+                <th>Observer</th>
+                <th>Priority</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <?php if($show_status_info): ?>
+                    <th>Changed By</th>
+                    <th>Remark</th>
+                <?php endif; ?>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($tasks)): $i = 1;
+                foreach ($tasks as $task): ?>
+                    <tr>
+                        <td><?= $i++; ?></td>
+                        <td><?= $task['title']; ?></td>
+                        <td><?= $task['lead_name']; ?></td>
+                        <td><?= $task['assigned_name']; ?></td>
+                        <td><?= $task['observer']; ?></td>
+                        <td><?= $task['priority']; ?></td>
+                        <td><?= $task['start_date']; ?></td>
+                        <td><?= $task['end_date']; ?></td>
+                        <td>
+                            <?php 
+                                $status_display = !empty($task['status_name']) ? $task['status_name'] : 'Active';
+                                $badge_class = ($status_display === 'Active') ? 'bg-success' : 'bg-secondary';
+                            ?>
+                            <span class="badge <?= $badge_class; ?>" 
+                                  style="cursor:pointer;"
+                                  onclick="changeStatus(<?= $task['id']; ?>)">
+                                <?= $status_display; ?>
+                            </span>
+                        </td>
+
+                        <?php if($show_status_info): ?>
+                            <td>
+                                <?= !empty($task['status_changed_by']) ? $task['status_changed_by'] : ''; ?>
+                            </td>
+                            <td>
+                                <?= !empty($task['remark']) ? $task['remark'] : ''; ?>
+                            </td>
+                        <?php endif; ?>
+
+                       <?php
+// Get the logged-in user object
+$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+
+// Split access into array if not empty
+$access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
+?>
+
+<td>
+    <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+        <button style="color: black;" class="btn btn-sm btn-warning"
+            onclick="editTask(<?= $task['id']; ?>)">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    <?php endif; ?>
+
+    <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+        <a style="color: white;" href="<?= base_url('Task/delete/' . $task['id']); ?>"
+           class="btn btn-sm btn-danger"
+           onclick="return confirm('Are you sure you want to delete this task?')">
+           <i class="fas fa-trash"></i> Delete
+        </a>
+    <?php endif; ?>
+</td>
+
+                    </tr>
+                <?php endforeach;
+            else: ?>
+                <tr>
+                    <td colspan="<?= $show_status_info ? 12 : 10 ?>" class="text-center">No tasks found</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+<!-- Task Cards (Mobile Only) -->
+<div class="row g-3 d-block d-md-none">
+    <?php if(!empty($tasks)): ?>
+        <?php foreach($tasks as $task): ?>
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title"><?= $task['title']; ?></h5>
+                        <p class="mb-1"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
+                        <p class="mb-1"><strong>Assigned To:</strong> <?= $task['assigned_name']; ?></p>
+                        <p class="mb-1"><strong>Observer:</strong> <?= $task['observer']; ?></p>
+                        <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
+                        <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
+                        <p class="mb-1"><strong>End Date:</strong> <?= $task['end_date']; ?></p>
+
+                        <p class="mb-1">
+                            <strong>Status:</strong> 
+                            <span class="badge <?= $task['status_name'] === 'Active' ? 'bg-success' : 'bg-secondary'; ?>" style="cursor:pointer;" onclick="changeStatus(<?= $task['id']; ?>)">
+                                <?= $task['status_name'] ?? 'Active'; ?>
+                            </span>
+                        </p>
+
+                        <?php if(!empty($task['status_changed_by']) || !empty($task['remark'])): ?>
+                            <p class="mb-1"><strong>Changed By:</strong> <?= $task['status_changed_by'] ?? ''; ?></p>
+                            <p class="mb-1"><strong>Remark:</strong> <?= $task['remark'] ?? ''; ?></p>
+                        <?php endif; ?>
+
+                        <div class="mt-3 d-flex justify-content-between">
+                           <?php 
+$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+
+// Split access into array if not empty
+$access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
+?>
+
+<td>
+    <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+        <!-- Edit Button -->
+        <button style="color: black;" class="btn btn-sm btn-warning"
+            onclick="editTask(<?= $task['id']; ?>)">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    <?php endif; ?>
+
+    <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+        <!-- Delete Button -->
+        <a style="color: white;" 
+           href="<?= base_url('Task/delete/' . $task['id']); ?>"
+           class="btn btn-sm btn-danger"
+           onclick="return confirm('Are you sure you want to delete this task?')">
+           <i class="fas fa-trash"></i> Delete
+        </a>
+    <?php endif; ?>
+</td>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="col-12">
+            <div class="alert alert-info text-center">No tasks found</div>
+        </div>
+    <?php endif; ?>
+</div>
+
+
                             </div>
 
                         </div>
@@ -97,6 +226,47 @@
             </div>
         </div>
     </div>
+<!-- Change Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="statusForm" method="post" action="<?= base_url('Task/change_status'); ?>">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Change Task Status</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="task_id" id="status_task_id">
+<input type="hidden" name="parent_id" value="<?= $user->parent_id ?>">
+<input type="hidden" name="status_changed_by" value="<?= $user->name?>">
+                    <div class="mb-3">
+                        <label class="form-label">Select Status</label>
+                       <select name="status_id" id="status_id" class="form-control" required style="color: black;">
+    <option value="">Select Status</option>
+    <?php 
+    $status_options = $this->db
+        ->where(['type' => 'status', 'parent_id' => $user->parent_id ])
+        ->get('master_table')
+        ->result_array();
+    foreach($status_options as $status): ?>
+        <option value="<?= $status['id'] ?>"><?= $status['name'] ?></option>
+    <?php endforeach; ?>
+</select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Remark</label>
+                        <textarea name="remark" id="status_remark" class="form-control" rows="3" placeholder="Enter remark"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-info">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
     <!-- Add Task Modal -->
     <!-- Add Task Modal -->
@@ -266,9 +436,19 @@
             </div>
         </div>
     </div>
+<script>
+function changeStatus(taskId) {
+    document.getElementById('status_task_id').value = taskId;
+    document.getElementById('status_id').value = ''; // reset
+    document.getElementById('status_remark').value = '';
+    var modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
+}
+</script>
 
     <!-- JS for Edit -->`
     <script>
+        
         function editTask(id) {
             fetch("<?= base_url('Task/get/'); ?>" + id)
                 .then(res => res.json())

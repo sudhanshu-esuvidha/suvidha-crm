@@ -37,56 +37,49 @@ class TeamStructure extends MY_Controller
       }
 
 
-      public function save_rights()
-        {
-            $this->load->helper('url');
-            $this->load->database();
+     public function save_rights()
+{
+    $this->load->helper('url');
+    $this->load->database();
 
-            $user_id = $this->input->post('user_id');
-            $rights  = $this->input->post('rights'); // Array of selected rights
+    $user_id = $this->input->post('user_id');
+    $rights  = $this->input->post('rights');
 
-            if(!$user_id) {
-                $this->session->set_flashdata('error', 'Invalid user.');
-                redirect($_SERVER['HTTP_REFERER']);
+    if(!$user_id) {
+        $this->session->set_flashdata('error', 'Invalid user.');
+        redirect($_SERVER['HTTP_REFERER'] ?? base_url('TeamStructure'));
+    }
+
+    $rights_mapping = [
+        'create'     => 1,
+        'update'     => 2,
+        'delete'     => 3,
+        'branches'   => 4,
+        'sources'    => 5,
+        'status'     => 6,
+        'priorities' => 7,
+        'export'     => 8,
+        'import'     => 9,
+    ];
+
+    $access_numbers = [];
+    if($rights && is_array($rights)) {
+        foreach($rights as $r) {
+            if(isset($rights_mapping[$r])) {
+                $access_numbers[] = $rights_mapping[$r];
             }
-
-            // Assign access numbers based on rights selected
-            // Define mapping of each right to a number
-            $rights_mapping = [
-                'create'    => 1,
-                'read'      => 2,
-                'update'    => 3,
-                'delete'    => 4,
-                'branches'  => 5,
-                'leads'     => 6,
-                'sources'   => 7,
-                'status'    => 8,
-                'calling'   => 9,
-                'export'    => 10,
-                'import'    => 11,
-                'settings'  => 12
-            ];
-
-            $access_numbers = [];
-            if($rights && is_array($rights)) {
-                foreach($rights as $r) {
-                    if(isset($rights_mapping[$r])) {
-                        $access_numbers[] = $rights_mapping[$r];
-                    }
-                }
-            }
-
-            // Convert array to comma-separated string for storage
-            $access_string = implode(',', $access_numbers);
-
-            // Update the users table
-            $this->db->where('id', $user_id);
-            $this->db->update('users', ['access' => $access_string]);
-
-            $this->session->set_flashdata('success', 'User rights updated successfully!');
-            redirect($_SERVER['HTTP_REFERER']);
         }
-     
+    }
+
+    $access_string = implode(',', $access_numbers);
+
+    $this->db->where('id', $user_id);
+    $this->db->update('users', ['access' => $access_string]);
+
+    $this->session->set_flashdata('success', 'User rights updated successfully!');
+    redirect($_SERVER['HTTP_REFERER'] ?? base_url('TeamStructure'));
+}
+
 public function add()
 {
     $role_id = $this->uri->segment(3);
@@ -220,6 +213,62 @@ public function add()
         $this->load->view('add', $data);
     }
 }
+
+public function get_user($id){
+    $user = $this->db->get_where('users', ['id' => $id])->row_array();
+    $user_details = $this->db->get_where('user_details', ['user_id' => $id])->row_array();
+
+    $data = array_merge($user, $user_details);
+    echo json_encode($data);
+}
+public function update_user()
+{
+    $user_id          = $this->input->post('id');           
+    $full_name        = $this->input->post('first_name');   
+    $email            = $this->input->post('email');
+    $mobile_no        = $this->input->post('mobile_no');
+    $father_name      = $this->input->post('father_name');
+    $dob              = $this->input->post('dob');
+    $gender           = $this->input->post('gender');
+    $address          = $this->input->post('address');
+    $password         = $this->input->post('password');
+    $confirm_password = $this->input->post('confirm_password');
+
+    // Split full name into first and last name
+    $name_parts = explode(' ', $full_name, 2);
+    $first_name = $name_parts[0];
+    $last_name  = isset($name_parts[1]) ? $name_parts[1] : '';
+
+    // Update user_details table
+    $this->db->where('user_id', $user_id);
+    $this->db->update('user_details', [
+        'first_name'  => $first_name,
+        'last_name'   => $last_name,
+        'email'       => $email,
+        'mobile_no'   => $mobile_no,
+        'father_name' => $father_name,
+        'dob'         => $dob,
+        'gender'      => $gender,
+        'address'     => $address
+    ]);
+
+    // Update password in users table if provided
+    if (!empty($password)) {
+        if ($password !== $confirm_password) {
+            echo json_encode(['status' => 'error', 'message' => 'Password and Confirm Password do not match!']);
+            return;
+        }
+
+        $encrypted_password = $this->encrypt_decrypt('encrypt', $password);
+
+        $this->db->where('id', $user_id);
+        $this->db->update('users', ['password' => $encrypted_password]);
+    }
+
+    // Return JSON response for AJAX
+    echo json_encode(['status' => 'success', 'message' => 'User details updated successfully.']);
+}
+
 
 
 /**

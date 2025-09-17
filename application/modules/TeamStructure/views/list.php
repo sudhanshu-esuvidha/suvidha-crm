@@ -70,11 +70,11 @@
                                         <td><?php echo date("d-m-Y",strtotime($row->created_at)); ?></td>
                                       <td>
                                         <!-- Edit Button -->
-                                        <a class="btn btn-sm btn-primary" 
-                                           href="<?= base_url('TeamStructure/add/'.$row->role.'/'.$row->id) ?>" 
-                                           title="Edit">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
+                                        <button class="btn btn-sm btn-primary" 
+        onclick="editUser(<?= $row->id ?>)" 
+        title="Edit">
+    <i class="fa fa-edit"></i>
+</button>
 
                                         <!-- Rights Button -->
                                         <button type="button" 
@@ -160,6 +160,83 @@
             </div>
         </div>
     </div>
+<!-- Edit User Modal -->
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+       <form action="<?= base_url('TeamStructure/update_user'); ?>" method="post">
+    <div class="modal-body">
+        <input type="hidden" name="id" id="edit_user_id">
+        <div class="row g-3">
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Name</label>
+                <input type="text" name="first_name" id="edit_user_name" class="form-control" required>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="edit_user_email" class="form-control" required>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Mobile</label>
+                <input type="text" name="mobile_no" id="edit_user_mobile" class="form-control" required>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Father Name</label>
+                <input type="text" name="father_name" id="edit_user_father" class="form-control">
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dob" id="edit_user_dob" class="form-control">
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Gender</label>
+                <select name="gender" id="edit_user_gender" class="form-control">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Address</label>
+                <textarea name="address" id="edit_user_address" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" id="edit_user_password" class="form-control" placeholder="Enter new password">
+            </div>
+
+            <div class="col-md-6 col-12">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="confirm_password" id="edit_user_confirm_password" class="form-control" placeholder="Confirm new password">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Close
+        </button>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Update User
+        </button>
+    </div>
+</form>
+
+        </div>
+    </div>
+</div>
+
 
 <!-- ===================== Rights Modal ===================== -->
 <div class="modal fade" id="rights_modal" tabindex="-1" aria-labelledby="rightsLabel" aria-hidden="true">
@@ -202,12 +279,7 @@
                 <label class="form-check-label" for="right_create">Create</label>
               </div>
             </div>
-            <div class="col-md-3 col-6">
-              <div class="form-check form-switch">
-                <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="read" id="right_read">
-                <label class="form-check-label" for="right_read">Read</label>
-              </div>
-            </div>
+           
             <div class="col-md-3 col-6">
               <div class="form-check form-switch">
                 <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="update" id="right_update">
@@ -233,8 +305,8 @@
             </div>
             <div class="col-md-4 col-6">
               <div class="form-check form-switch">
-                <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="leads" id="right_leads">
-                <label class="form-check-label" for="right_leads">Manage Leads</label>
+                <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="priorities" id="right_leads">
+                <label class="form-check-label" for="right_leads">Manage Priorities</label>
               </div>
             </div>
             <div class="col-md-4 col-6">
@@ -249,12 +321,7 @@
                 <label class="form-check-label" for="right_status">Manage Status</label>
               </div>
             </div>
-            <div class="col-md-4 col-6">
-              <div class="form-check form-switch">
-                <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="calling" id="right_calling">
-                <label class="form-check-label" for="right_calling">Calling</label>
-              </div>
-            </div>
+          
           </div>
 
           <!-- ✅ Extra Rights -->
@@ -272,12 +339,7 @@
                 <label class="form-check-label" for="right_import">Import Data</label>
               </div>
             </div>
-            <div class="col-md-4 col-6">
-              <div class="form-check form-switch">
-                <input class="form-check-input rights-checkbox" type="checkbox" name="rights[]" value="settings" id="right_settings">
-                <label class="form-check-label" for="right_settings">Settings Access</label>
-              </div>
-            </div>
+            
           </div>
 
         </div>
@@ -298,6 +360,46 @@
 
 
 <?php $this->load->view('Template/footer',$data); ?>
+<script>
+document.querySelector('#editUserModal form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let formData = new FormData(this);
+
+    fetch("<?= base_url('TeamStructure/update_user'); ?>", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.status === 'success'){
+            alert(res.message);
+            location.reload(); // reload table
+        } else {
+            alert('Update failed!');
+        }
+    })
+    .catch(err => console.error(err));
+});
+
+</script>
+
+<script>
+function editUser(id) {
+    fetch("<?= base_url('TeamStructure/get_user/'); ?>" + id)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('edit_user_id').value = data.user_id;
+        document.getElementById('edit_user_name').value = data.name;
+        document.getElementById('edit_user_email').value = data.email;
+        document.getElementById('edit_user_mobile').value = data.mobile_no;
+ 
+
+        var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    });
+}
+
+</script>
 
 <script>
     function add_modal(){
