@@ -5,7 +5,7 @@
 	<meta name="keywords" content="">
 	<meta name="author" content="">
 	<title>Suvidha CRM</title>
-	<link rel="shortcut icon" type="image/x-icon" href="<?php echo base_url(); ?>assets/img/favicon.png">
+	<link rel="shortcut icon" type="image/x-icon" href="<?php echo base_url(); ?>assets/img/fav.png">
 	<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/bootstrap.min.css">
 	<link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/fontawesome/css/fontawesome.min.css">
 	<link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/fontawesome/css/all.min.css">
