@@ -20,76 +20,119 @@ $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
 $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
 ?>
 
-<div class="col-md-12">
+<div class="col-md-12 d-flex gap-2">
 
-    <!-- Upload CSV (Import) button, only if user has access ID 9 -->
- <?php
-// Upload CSV (Import) button: show if user has import access (9) OR parent_id is 1
-if (in_array(9, $access_array) || $logged_in_user->parent_id == 1): ?>
-    <span onclick="upload_csv()" class="badge bg-success">
-        <i class="fas fa-upload"></i> Upload CSV
-    </span>
-<?php endif; ?>
+    <!-- Upload CSV (Import) button -->
+    <?php if (in_array(9, $access_array) || $logged_in_user->parent_id == 1): ?>
+        <span onclick="upload_csv()" class="custom-btn bg-success">
+            <i class="fas fa-upload"></i> Upload CSV
+        </span>
+    <?php endif; ?>
 
-<?php
-// Download Sample (Export) button: show if user has export access (8) OR parent_id is 1
-if (in_array(8, $access_array) || $logged_in_user->parent_id == 1): ?>
-    <span class="badge bg-danger">
-        <a download="" href="<?php echo base_url(); ?>lead_sample_csv.csv">
-            <i class="fas fa-download"></i> Download Sample
-        </a>
-    </span>
-<?php endif; ?>
+    <!-- Download Sample (Export) button -->
+    <?php if (in_array(8, $access_array) || $logged_in_user->parent_id == 1): ?>
+        <span class="custom-btn bg-danger">
+            <a download="" href="<?php echo base_url(); ?>lead_sample_csv.csv" class="text-white text-decoration-none">
+                <i class="fas fa-download"></i> Download Sample
+            </a>
+        </span>
+    <?php endif; ?>
 
-<?php
-// Assign To button: only if parent_id is 1
-if ($logged_in_user->parent_id == 1): ?>
-    <span onclick="assign_to()" class="badge bg-info">
-        <i class="fas fa-users"></i> Assign To
-    </span>
-<?php endif; ?>
-
+    <!-- Assign To button -->
+    <?php if ($logged_in_user->parent_id == 1): ?>
+        <span onclick="assign_to()" class="custom-btn bg-info">
+            <i class="fas fa-users"></i> Assign To
+        </span>
+    <?php endif; ?>
 
 </div>
 
+<style>
+.custom-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;      /* Medium size */
+    font-size: 16px;         /* Medium text */
+    cursor: pointer;
+    border-radius: 6px;
+    color: #fff;
+    transition: background 0.3s;
+}
+
+.custom-btn i {
+    margin-right: 6px;       /* Space between icon and text */
+}
+
+.custom-btn:hover {
+    opacity: 0.85;           /* Simple hover effect */
+}
+
+.custom-btn a {
+    display: inline-flex;
+    align-items: center;
+    color: #fff;
+}
+</style>
+
+
 					<div class="row mt-2">
 					<?php if($user->role == 1 || $user->role == 2){ ?>
-    <div class="col-md-12">
+<div class="col-md-12 d-flex gap-2">
 
-        <?php 
-        // Get logged-in user's ID from session
-        $logged_in_user_id = ucfirst($user->id);
+    <?php 
+    // Get logged-in user's ID from session
+    $logged_in_user_id = ucfirst($user->id);
 
-        // Fetch users where parent_id = logged-in user's ID
-        $assign_to = $this->db->get_where('users', ['parent_id' => $logged_in_user_id])->result(); 
-        ?>
-        
-        <select onchange="filter_by()" id="assign_to" class="select1 floating1">
-            <option value="">--all employee--</option>
-            <?php foreach($assign_to as $userAssign){ ?>
-                <option <?php if(isset($_GET['assign_to']) && $_GET['assign_to'] == $userAssign->id){ echo "selected"; } ?> 
-                        value="<?= $userAssign->id; ?>">
-                    <?= $userAssign->name; ?>
-                </option>
-            <?php } ?>
-        </select>
+    // Fetch users where parent_id = logged-in user's ID
+    $assign_to = $this->db->get_where('users', ['parent_id' => $logged_in_user_id])->result(); 
+    ?>
+    
+    <select onchange="filter_by()" id="assign_to" class="custom-select">
+        <option value="">--all employee--</option>
+        <?php foreach($assign_to as $userAssign){ ?>
+            <option <?php if(isset($_GET['assign_to']) && $_GET['assign_to'] == $userAssign->id){ echo "selected"; } ?> 
+                    value="<?= $userAssign->id; ?>">
+                <?= $userAssign->name; ?>
+            </option>
+        <?php } ?>
+    </select>
 
-       <?php 
-$status = $this->db
-               ->get_where('master_table', ['type' => 'status', 'parent_id' => $logged_in_user_id])
-               ->result(); 
-?>
-        <select onchange="filter_by()" id="status" class="select1 floating1">
-            <option value="">--all status--</option>
-            <?php foreach($status as $rowStatus){ ?>
-                <option <?php if(isset($_GET['status']) && $_GET['status'] == $rowStatus->id){ echo "selected"; } ?> 
-                        value="<?= $rowStatus->id; ?>">
-                    <?= $rowStatus->name; ?>
-                </option>
-            <?php } ?>
-        </select>
+    <?php 
+    $status = $this->db
+                   ->get_where('master_table', ['type' => 'status', 'parent_id' => $logged_in_user_id])
+                   ->result(); 
+    ?>
+    <select onchange="filter_by()" id="status" class="custom-select">
+        <option value="">--all status--</option>
+        <?php foreach($status as $rowStatus){ ?>
+            <option <?php if(isset($_GET['status']) && $_GET['status'] == $rowStatus->id){ echo "selected"; } ?> 
+                    value="<?= $rowStatus->id; ?>">
+                <?= $rowStatus->name; ?>
+            </option>
+        <?php } ?>
+    </select>
 
-    </div>
+</div>
+
+<style>
+.custom-select {
+    padding: 8px 12px;      /* Medium size */
+    font-size: 16px;        /* Medium text */
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    min-width: 180px;       /* Minimum width */
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.custom-select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+    outline: none;
+}
+</style>
+
 <?php } ?>
 
 						<?php if($this->session->flashdata('success')){ ?>
