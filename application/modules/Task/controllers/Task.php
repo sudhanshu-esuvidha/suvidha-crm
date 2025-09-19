@@ -121,7 +121,7 @@ $this->load->view('task_list', $data);
 
         $this->db->insert('tasks', $data);
         $this->session->set_flashdata('success', 'Task added successfully.');
-        redirect('task');
+        redirect('Task');
     }
 
     // Fetch Task for Edit (AJAX)
