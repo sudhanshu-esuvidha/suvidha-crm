@@ -171,12 +171,13 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                                 <input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>" style="transform: scale(1.2); margin-right: 5px;"> 
                                 <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $row->mobile_no; ?>)">
                                     <?php echo ucwords($row->contact_name); ?>
+                                     <span class="badge bg-primary pull-right">
+                                                        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
+                                                    </span>
                                     <span class="small d-block mt-1">
                                         <i class="fa fa-map-marker"></i> <?php echo $row->address; ?>
                                     </span>
-                                    <span class="badge bg-primary pull-right" style="font-size:13px; padding:6px 10px;">
-                                        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
-                                    </span>
+                                   
                                 </a>
                             </h6>
 
