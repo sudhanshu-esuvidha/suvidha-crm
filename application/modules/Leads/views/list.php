@@ -459,7 +459,9 @@ if(!in_array($role_id, [1,2])){
 <div class="modal-body">
     <div class="form-group row mb-3">
         <div class="col-md-8">
+            <label>Priority</label>
             <select class="form-control" name="priority_id" required>
+
                 <option value="">--select priority--</option>
                 <?php 
                 $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
@@ -472,6 +474,7 @@ if(!in_array($role_id, [1,2])){
 
     <div class="form-group row mb-3">
         <div class="col-md-8">
+            <label>Status</label>
             <select class="form-control" name="status_id" required>
                 <option value="">--select status--</option>
                 <?php 
@@ -485,12 +488,14 @@ if(!in_array($role_id, [1,2])){
 
     <div class="form-group row mb-3">
         <div class="col-md-8">
+            <label>Next Meeting Date Time</label>
             <input placeholder="Next Meeting Date Time" type="datetime-local" name="next_followup" class="form-control">
         </div>
     </div>							
 
     <div class="form-group row mb-3">
         <div class="col-md-8">
+            <label>Remark</label>
             <textarea placeholder="Remark" class="form-control" name="remark"></textarea>
         </div>
     </div>
