@@ -59,7 +59,8 @@ public function change_status()
         $this->db->group_start();
         $this->db->where('t.assigned_to', $user_id);
         $this->db->or_where('t.parent_id', $user_id);
-        $this->db->group_end();
+          $this->db->or_where("FIND_IN_SET($user_id, t.observers) !=", 0);
+    $this->db->group_end();
     }
 
     $tasks = $this->db->get()->result_array();
