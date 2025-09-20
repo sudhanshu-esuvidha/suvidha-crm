@@ -82,53 +82,69 @@ public function list()
 }
 
 		
-		
-    public function add()
-	{
-		$type=$this->uri->segment(3);
-		$parent_id=$this->session->userdata('user_info')->id;
-		$id=$this->input->post('leadid');
+		public function add()
+{
+    $type = $this->uri->segment(3);
+    $session_user = $this->session->userdata('user_info');
+    $session_user_id = $session_user->id;
 
-		if($this->input->post())
-		{	    
-			$data=array(
-				'name'=>$this->input->post('name'),
-				'type'=>$type,
-				'parent_id'=>$parent_id
-			);
+    // Fetch fresh user info from DB to get role and parent_id
+    $user = $this->db->get_where('users', ['id' => $session_user_id])->row();
+    $role_id = $user->role ?? 0;
 
-			if($id)
-			{
-				$this->Common_Model->update('master_table',$data,array('id'=>$id));
-				$this->session->set_flashdata('success','Data Successfully updated!');
-			}
-			else
-			{
-				$id=$this->Common_Model->insert('master_table',$data);
-				if($id)
-				{
-					$this->session->set_flashdata('success','Data Successfully added!');     
-				}
-			}
-			redirect(base_url().'Mastertable/list/'.$type.'/'.$parent_id);
-		}
-		else
-		{
-			$data['type']=$type;
-			$data['parent_id']=$parent_id;
-			$data['data']=array();
-			if($id)
-			{
-				$data['data']=$this->Common_Model->get_row('master_table','*',array('id'=>$id));
-			}
+    $id = $this->input->post('leadid');
 
-			// fetch parents for dropdown
-			$data['parents']=$this->Common_Model->get_result('master_table','*',array('type'=>$type,'parent_id'=>0,'status'=>1));
+    if($this->input->post())
+    {   
+        // Determine parent_id based on role
+        if($role_id == 1 || $role_id == 2){
+            $parent_id_to_store = $session_user_id;
+        } else {
+            // For other roles, store the parent_id from users table
+            $parent_id_to_store = $user->parent_id ?? $session_user_id;
+        }
 
-			$data['user']=$this->session->userdata('user_info');
-			$this->load->view('add',$data);  
-		}
-	}
+        $data = array(
+            'name' => $this->input->post('name'),
+            'type' => $type,
+            'parent_id' => $parent_id_to_store
+        );
+
+        if($id)
+        {
+            $this->Common_Model->update('master_table', $data, array('id' => $id));
+            $this->session->set_flashdata('success','Data Successfully updated!');
+        }
+        else
+        {
+            $insert_id = $this->Common_Model->insert('master_table', $data);
+            if($insert_id)
+            {
+                $this->session->set_flashdata('success','Data Successfully added!');     
+            }
+        }
+
+        redirect(base_url().'Mastertable/list/'.$type.'/'.$session_user_id);
+    }
+    else
+    {
+        $data['type'] = $type;
+        $data['parent_id'] = $session_user_id;
+        $data['data'] = array();
+
+        if($id)
+        {
+            $data['data'] = $this->Common_Model->get_row('master_table','*',array('id'=>$id));
+        }
+
+        // fetch parents for dropdown
+        $data['parents'] = $this->Common_Model->get_result('master_table','*',array('type'=>$type,'parent_id'=>0,'status'=>1));
+
+        $data['user'] = $session_user;
+        $this->load->view('add', $data);  
+    }
+}
+
 
 	public function delete()
 	{
