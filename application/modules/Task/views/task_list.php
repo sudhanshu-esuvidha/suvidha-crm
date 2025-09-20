@@ -189,9 +189,9 @@ elseif (!empty($logged_in_user->access)) {
                         <p class="mb-1"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
 
                         <!-- Show Observer only if not empty -->
-                        <?php if(!empty($observerDisplay)): ?>
-                            <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
-                        <?php endif; ?>
+                    <?php if (!empty($observerDisplay)): ?>
+    <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
+<?php endif; ?>
 
                         <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
                         <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
