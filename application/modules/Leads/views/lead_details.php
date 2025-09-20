@@ -54,7 +54,7 @@
 																<div class="small doj text-muted">Date  Created : <?php echo date("d M Y h:i a",strtotime($data->created_at));  ?></div>
 																<div class="staff-msg">
 																    <a class="btn btn-custom" href="tel:<?php echo $data->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $data->mobile_no; ?>)">
-																			<?php echo ucwords($data->contact_name); ?> 
+																			
 
 																			 <i class="la la-phone-volume"></i>	Make Call
 																		</a> </div>
