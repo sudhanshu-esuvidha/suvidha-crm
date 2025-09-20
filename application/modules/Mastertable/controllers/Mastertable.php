@@ -69,13 +69,12 @@ public function list()
     $data['user'] = $user;
 
     // Conditional fetching based on role
-    if ($role_id == 1 || $role_id == 2) {
-        // Role 1 or 2: fetch all rows of this type
-        $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'"AND parent_id="'.$user->id .'" ORDER BY id DESC');
-    } else {
-        // Other roles: fetch only rows where parent_id matches logged-in user
-        $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
-    }
+  if ($role_id == 1 || $role_id == 2) {
+    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'"AND parent_id="'.$user->id .'" ORDER BY id DESC');
+} else {
+    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
+}
+
 
     $data['heading'] = $type.' List';
     $this->load->view('list', $data);
