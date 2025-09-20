@@ -80,92 +80,128 @@ elseif (!empty($logged_in_user->access)) {
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
-            <?php if (!empty($tasks)): $i = 1;
-                foreach ($tasks as $task): ?>
-                    <tr>
-                        <td><?= $i++; ?></td>
-                        <td><?= $task['title']; ?></td>
-                        <td><?= $task['lead_name']; ?></td>
-                        <td><?= $task['assigned_name']; ?></td>
-                        <td><?= $task['observer']; ?></td>
-                        <td><?= $task['priority']; ?></td>
-                        <td><?= $task['start_date']; ?></td>
-                        <td><?= $task['end_date']; ?></td>
-                        <td>
-                            <?php 
-                                $status_display = !empty($task['status_name']) ? $task['status_name'] : 'Active';
-                                $badge_class = ($status_display === 'Active') ? 'bg-success' : 'bg-secondary';
-                            ?>
-                            <span class="badge <?= $badge_class; ?>" 
-                                  style="cursor:pointer;"
-                                  onclick="changeStatus(<?= $task['id']; ?>)">
-                                <?= $status_display; ?>
-                            </span>
-                        </td>
+       <tbody>
+    <?php if (!empty($tasks)): $i = 1;
+        foreach ($tasks as $task): ?>
+            <tr>
+                <td><?= $i++; ?></td>
+                <td><?= $task['title']; ?></td>
+                <td><?= $task['lead_name']; ?></td>
 
-                        <?php if($show_status_info): ?>
-                            <td>
-                                <?= !empty($task['status_changed_by']) ? $task['status_changed_by'] : ''; ?>
-                            </td>
-                            <td>
-                                <?= !empty($task['remark']) ? $task['remark'] : ''; ?>
-                            </td>
-                        <?php endif; ?>
+                <!-- Assigned To -->
+                <td>
+                    <?php if ($task['assigned_to'] == $user->id): ?>
+                        <span class="text-success fw-bold">Your Lead</span>
+                    <?php else: ?>
+                        <?= $task['assigned_name']; ?>
+                    <?php endif; ?>
+                </td>
 
-                       <?php
-// Get the logged-in user object
-$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+                <!-- Observer -->
+                <td>
+                    <?php 
+                        // observer might be comma-separated list of user IDs
+                        $observers = !empty($task['observer']) ? explode(',', $task['observer']) : [];
+                        if (in_array($user->id, $observers)): 
+                    ?>
+                        <span class="text-info fw-bold">Observer</span>
+                    <?php else: ?>
+                        <?= $task['observer']; ?>
+                    <?php endif; ?>
+                </td>
 
-// Split access into array if not empty
-$access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
-?>
+                <td><?= $task['priority']; ?></td>
+                <td><?= $task['start_date']; ?></td>
+                <td><?= $task['end_date']; ?></td>
 
-<td>
-    <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
-        <button style="color: black;" class="btn btn-sm btn-warning"
-            onclick="editTask(<?= $task['id']; ?>)">
-            <i class="fas fa-edit"></i> Edit
-        </button>
+                <td>
+                    <?php 
+                        $status_display = !empty($task['status_name']) ? $task['status_name'] : 'Active';
+                        $badge_class = ($status_display === 'Active') ? 'bg-success' : 'bg-secondary';
+                    ?>
+                    <span class="badge <?= $badge_class; ?>" 
+                          style="cursor:pointer;"
+                          onclick="changeStatus(<?= $task['id']; ?>)">
+                        <?= $status_display; ?>
+                    </span>
+                </td>
+
+                <?php if($show_status_info): ?>
+                    <td><?= $task['status_changed_by'] ?? ''; ?></td>
+                    <td><?= $task['remark'] ?? ''; ?></td>
+                <?php endif; ?>
+
+                <!-- Action column remains same -->
+                <td>
+                    <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+                        <button style="color: black;" class="btn btn-sm btn-warning"
+                            onclick="editTask(<?= $task['id']; ?>)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    <?php endif; ?>
+
+                    <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                        <a style="color: white;" href="<?= base_url('Task/delete/' . $task['id']); ?>"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this task?')">
+                           <i class="fas fa-trash"></i> Delete
+                        </a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+    <?php endforeach;
+    else: ?>
+        <tr>
+            <td colspan="<?= $show_status_info ? 12 : 10 ?>" class="text-center">No tasks found</td>
+        </tr>
     <?php endif; ?>
+</tbody>
 
-    <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-        <a style="color: white;" href="<?= base_url('Task/delete/' . $task['id']); ?>"
-           class="btn btn-sm btn-danger"
-           onclick="return confirm('Are you sure you want to delete this task?')">
-           <i class="fas fa-trash"></i> Delete
-        </a>
-    <?php endif; ?>
-</td>
-
-                    </tr>
-                <?php endforeach;
-            else: ?>
-                <tr>
-                    <td colspan="<?= $show_status_info ? 12 : 10 ?>" class="text-center">No tasks found</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
     </table>
 </div>
 <!-- Task Cards (Mobile Only) -->
 <div class="row g-3 d-block d-md-none">
     <?php if(!empty($tasks)): ?>
         <?php foreach($tasks as $task): ?>
+            <?php 
+                // Get logged-in user
+                $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+                $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
+
+                // Assigned To display
+                $assignedToDisplay = ($task['assigned_to'] == $user->id) 
+                    ? "<span class='badge bg-primary'>Your Lead</span>" 
+                    : $task['assigned_name'];
+
+                // Observer display
+                $observers = !empty($task['observer']) ? explode(',', $task['observer']) : [];
+                if (in_array($user->id, $observers)) {
+                    $observerDisplay = "<span class='badge bg-info text-dark'>Observer</span>";
+                } else {
+                    $observerDisplay = !empty($task['observer']) ? $task['observer'] : '';
+                }
+            ?>
             <div class="col-12">
                 <div class="card shadow-sm mb-3">
                     <div class="card-body">
                         <h5 class="card-title"><?= $task['title']; ?></h5>
                         <p class="mb-1"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
-                        <p class="mb-1"><strong>Assigned To:</strong> <?= $task['assigned_name']; ?></p>
-                        <p class="mb-1"><strong>Observer:</strong> <?= $task['observer']; ?></p>
+                        <p class="mb-1"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
+
+                        <!-- Show Observer only if not empty -->
+                        <?php if(!empty($observerDisplay)): ?>
+                            <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
+                        <?php endif; ?>
+
                         <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
                         <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
                         <p class="mb-1"><strong>End Date:</strong> <?= $task['end_date']; ?></p>
 
                         <p class="mb-1">
                             <strong>Status:</strong> 
-                            <span class="badge <?= $task['status_name'] === 'Active' ? 'bg-success' : 'bg-secondary'; ?>" style="cursor:pointer;" onclick="changeStatus(<?= $task['id']; ?>)">
+                            <span class="badge <?= $task['status_name'] === 'Active' ? 'bg-success' : 'bg-secondary'; ?>" 
+                                  style="cursor:pointer;" 
+                                  onclick="changeStatus(<?= $task['id']; ?>)">
                                 <?= $task['status_name'] ?? 'Active'; ?>
                             </span>
                         </p>
@@ -176,33 +212,23 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                         <?php endif; ?>
 
                         <div class="mt-3 d-flex justify-content-between">
-                           <?php 
-$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+                            <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+                                <!-- Edit Button -->
+                                <button style="color: black;" class="btn btn-sm btn-warning"
+                                    onclick="editTask(<?= $task['id']; ?>)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            <?php endif; ?>
 
-// Split access into array if not empty
-$access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
-?>
-
-<td>
-    <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
-        <!-- Edit Button -->
-        <button style="color: black;" class="btn btn-sm btn-warning"
-            onclick="editTask(<?= $task['id']; ?>)">
-            <i class="fas fa-edit"></i> Edit
-        </button>
-    <?php endif; ?>
-
-    <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-        <!-- Delete Button -->
-        <a style="color: white;" 
-           href="<?= base_url('Task/delete/' . $task['id']); ?>"
-           class="btn btn-sm btn-danger"
-           onclick="return confirm('Are you sure you want to delete this task?')">
-           <i class="fas fa-trash"></i> Delete
-        </a>
-    <?php endif; ?>
-</td>
-
+                            <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                                <!-- Delete Button -->
+                                <a style="color: white;" 
+                                   href="<?= base_url('Task/delete/' . $task['id']); ?>"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure you want to delete this task?')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -214,6 +240,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
         </div>
     <?php endif; ?>
 </div>
+
 
 
                             </div>
