@@ -1,6 +1,6 @@
 <?php
-// Fetch the logged-in user from DB to get full details
-$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+// Fetch the logged-in user from session
+$logged_in_user = $this->session->userdata('user_info');
 $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
 ?>
 
@@ -18,21 +18,20 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                 <i class="la la-building"></i> <span>Companies</span>
             </a>
         </li>
-    <?php endif; ?>
-    <?php if ($logged_in_user->role  !==  1): ?>
-        
-    <li>
-        <a href="<?php echo base_url(); ?>Task">
-            <i class="la la-tasks"></i> <span>Task Management</span>
-        </a>
-    </li>
+    <?php else: ?>
+        <li>
+            <a href="<?php echo base_url(); ?>Task">
+                <i class="la la-tasks"></i> <span>Task Management</span>
+            </a>
+        </li>
 
-    <li>
-        <a href="<?php echo base_url(); ?>Leads/list">
-            <i class="la la-chart-line"></i> <span>Leads</span>
-        </a>
-    </li>
+        <li>
+            <a href="<?php echo base_url(); ?>Leads/list">
+                <i class="la la-chart-line"></i> <span>Leads</span>
+            </a>
+        </li>
     <?php endif; ?>
+
     <?php if (in_array('4', $access_array) || $logged_in_user->parent_id == 1): ?>
         <li>
             <a href="<?php echo base_url(); ?>Mastertable/list/branch">
@@ -64,7 +63,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </a>
         </li>
     <?php endif; ?>
-  <?php if ($logged_in_user->role !== 1): ?>
+
     <?php if ($logged_in_user->role == 1 || $logged_in_user->role == 2 || $logged_in_user->parent_id == 1): ?>
         <li>
             <a href="<?php echo base_url(); ?>Mastertable/list/role">
@@ -90,5 +89,4 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </ul>
         </li>
     <?php endif; ?>
- <?php endif; ?>
 </ul>
