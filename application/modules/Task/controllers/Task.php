@@ -173,6 +173,6 @@ $this->load->view('task_list', $data);
         $this->db->delete('tasks');
 
         $this->session->set_flashdata('success', 'Task deleted successfully.');
-        redirect('task');
+        redirect('Task');
     }
 }
