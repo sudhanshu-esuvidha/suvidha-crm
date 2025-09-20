@@ -126,11 +126,11 @@
                                             </div>
                                             <div class="widgets-icons-2 rounded-circle bg-gradient-blues text-white ms-auto">
                                                 <div class="d-flex ms-auto gap-2">
-                                                <a class="btn btn-sm btn-outline-primary" 
-                                                   href="<?= base_url('TeamStructure/add/'.$row->role.'/'.$row->id) ?>" 
-                                                   title="Edit">
-                                                    <i class="fa fa-edit"></i>
-                                                </a>
+                                              <button class="btn btn-sm btn-primary" 
+        onclick="editUser(<?= $row->id ?>)" 
+        title="Edit">
+    <i class="fa fa-edit"></i>
+</button>
 
                                                 <button type="button" 
                                                 class="btn btn-sm btn-warning" 
