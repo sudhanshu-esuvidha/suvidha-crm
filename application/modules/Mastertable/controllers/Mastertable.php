@@ -54,30 +54,33 @@ class Mastertable extends MY_Controller
         }
 	}
 
-	public function list()
-	{
-$type = $this->uri->segment(3);
-$user_info = $this->session->userdata('user_info');
-$parent_id = $user_info->id;
-$role_id = $user_info->role ?? 0;  // get role, default 0 if not set
+public function list()
+{
+    $type = $this->uri->segment(3);
+    $user_info = $this->session->userdata('user_info');
+    $parent_id = $user_info->parent_id ;
 
-$data['type'] = $type;
-$data['parent_id'] = $parent_id;
-$data['user'] = $user_info;
+    // Fetch fresh user data from DB
+    $user = $this->db->get_where('users', ['id' => $parent_id])->row();
+    $role_id = $user->role ?? 0;  // Role from DB
 
-// Conditional fetching based on role
-if ($role_id == 1 || $role_id == 2) {
-    // Role 1 or 2: fetch all rows of this type
-    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" ORDER BY id DESC');
-} else {
-    // Other roles: fetch only rows where parent_id matches logged-in user
-    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
+    $data['type'] = $type;
+    $data['parent_id'] = $parent_id;
+    $data['user'] = $user;
+
+    // Conditional fetching based on role
+    if ($role_id == 1 || $role_id == 2) {
+        // Role 1 or 2: fetch all rows of this type
+        $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" ORDER BY id DESC');
+    } else {
+        // Other roles: fetch only rows where parent_id matches logged-in user
+        $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
+    }
+
+    $data['heading'] = $type.' List';
+    $this->load->view('list', $data);
 }
 
-$data['heading'] = $type.' List';
-$this->load->view('list', $data);
-
-	}
 		
 		
     public function add()
