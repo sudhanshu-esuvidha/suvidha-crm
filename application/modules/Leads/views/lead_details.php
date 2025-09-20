@@ -53,12 +53,22 @@
 																<div class="staff-id">Course : <?php echo ucwords($data->description); ?></div>
 																<div class="small doj text-muted">Date  Created : <?php echo date("d M Y h:i a",strtotime($data->created_at));  ?></div>
 																<div class="staff-msg">
-																<a class="btn btn-custom" 
-   href="tel:<?php echo $row->mobile_no; ?>" 
-   onclick="feedback_form(<?php echo $row->id; ?>, '<?php echo $row->mobile_no; ?>'); return true;">
-    <?php echo ucwords($row->contact_name); ?> 
-    <i class="la la-phone-volume"></i> Make Call
-</a></div>
+    <span class="badge pull-right" 
+          style="background-color:#0d6efd; 
+                 color:#fff; 
+                 cursor:pointer; 
+                 padding:0.5rem 1rem; 
+                 border-radius:50px; 
+                 font-weight:500; 
+                 display:inline-flex; 
+                 align-items:center; 
+                 gap:0.5rem; 
+                 transition: background 0.3s, transform 0.2s;"
+          onclick="window.location.href='tel:<?php echo $row->mobile_no; ?>'">
+        <i class="la la-phone-volume"></i> Make Call <?php echo $row->mobile_no; ?>
+    </span>
+</div>
+
 															</div>
 														</div>
 														<div class="col-md-7">
