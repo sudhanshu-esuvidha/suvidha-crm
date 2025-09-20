@@ -59,6 +59,7 @@ public function change_status()
         $this->db->group_start();
         $this->db->where('t.assigned_to', $user_id);
         $this->db->or_where('t.parent_id', $user_id);
+         $this->db->or_where("FIND_IN_SET(".$this->db->escape($user_id).", t.observer) !=", 0);
         $this->db->group_end();
     }
 
