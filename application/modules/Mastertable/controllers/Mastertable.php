@@ -56,16 +56,27 @@ class Mastertable extends MY_Controller
 
 	public function list()
 	{
-		$type=$this->uri->segment(3);
-		$parent_id=$this->session->userdata('user_info')->id;
+$type = $this->uri->segment(3);
+$user_info = $this->session->userdata('user_info');
+$parent_id = $user_info->id;
+$role_id = $user_info->role ?? 0;  // get role, default 0 if not set
 
-		$data['type']=$type;
-		$data['parent_id']=$parent_id;
-		$data['user']=$this->session->userdata('user_info');
+$data['type'] = $type;
+$data['parent_id'] = $parent_id;
+$data['user'] = $user_info;
 
-		$data['result']=get_all_list('master_table',' where type="'.$type.'" and parent_id="'.$parent_id.'" order by id desc');
-		$data['heading']=$type.' List';
-		$this->load->view('list',$data);  
+// Conditional fetching based on role
+if ($role_id == 1 || $role_id == 2) {
+    // Role 1 or 2: fetch all rows of this type
+    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" ORDER BY id DESC');
+} else {
+    // Other roles: fetch only rows where parent_id matches logged-in user
+    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
+}
+
+$data['heading'] = $type.' List';
+$this->load->view('list', $data);
+
 	}
 		
 		
