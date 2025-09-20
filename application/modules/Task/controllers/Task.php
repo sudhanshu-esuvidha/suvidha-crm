@@ -37,7 +37,7 @@ public function change_status()
     $this->db->update('tasks', $data);
 
     $this->session->set_flashdata('success', 'Task status updated successfully.');
-    redirect('task');
+    redirect('Task');
 }
 
     // Task List
@@ -121,7 +121,7 @@ $this->load->view('task_list', $data);
 
         $this->db->insert('tasks', $data);
         $this->session->set_flashdata('success', 'Task added successfully.');
-        redirect('task');
+        redirect('Task');
     }
 
     // Fetch Task for Edit (AJAX)
@@ -160,7 +160,7 @@ $this->load->view('task_list', $data);
         $this->db->update('tasks', $data);
 
         $this->session->set_flashdata('success', 'Task updated successfully.');
-        redirect('task');
+        redirect('Task');
     }
 
     // Delete Task
