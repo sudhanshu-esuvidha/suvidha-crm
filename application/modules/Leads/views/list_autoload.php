@@ -8,14 +8,11 @@
 																<div class="employee-notification-content">
 																	<h6>
 																	<input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>"> 
-<a href="tel:<?php echo $row->mobile_no; ?>" 
-   onclick="feedback_form(<?php echo $row->id; ?>, '<?php echo $row->mobile_no; ?>'); return true;">
-    <?php echo ucwords($row->contact_name); ?> 
-    <span class="small"><i class="fa fa-map-marker"></i> <?php echo $row->address; ?></span>
-    <span class="badge bg-primary pull-right">
-        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
-    </span>
-</a>
+<a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $row->mobile_no; ?>)">
+																			<?php echo ucwords($row->contact_name); ?> <span class="small"><i class="fa fa-map-marker"></i> <?php echo $row->address; ?></span>
+
+																			<span  class="badge bg-primary pull-right"> <i class="la la-phone-volume"></i>	<?php echo $row->mobile_no; ?> </span>
+																		</a> 
 																	</h6>
 
                                                                     <ul class="nav">
