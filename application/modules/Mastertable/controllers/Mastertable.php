@@ -70,7 +70,7 @@ public function list()
 
     // Conditional fetching based on role
   if ($role_id == 1 || $role_id == 2) {
-    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'"AND parent_id="'.$user->id .'" ORDER BY id DESC');
+    $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'"AND parent_id="'.$user_info->id .'" ORDER BY id DESC');
 } else {
     $data['result'] = get_all_list('master_table', ' WHERE type="'.$type.'" AND parent_id="'.$parent_id.'" ORDER BY id DESC');
 }
