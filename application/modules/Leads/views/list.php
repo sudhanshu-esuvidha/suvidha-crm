@@ -434,52 +434,68 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 							<h5 class="modal-title"  id="modal_title"></h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
-						<div class="modal-body">
-							<div class="form-group row mb-3">
-								
-								<div class="col-md-8">
-									<select class="form-control" name="priority_id" required>
-										<option value="">--select priority--</option>
-<?php 
-$result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $logged_in_user_id"); 
-?>										<?php foreach($result as $row){ ?>
-											<option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
-										<?php } ?>
-										
-									</select>
-								</div>
-							</div>
-							<div class="form-group row mb-3">
-								
-								<div class="col-md-8">
-									<select class="form-control" name="status_id" required>
-										<option value="">--select status--</option>
-<?php 
-$result = get_all_list('master_table', " WHERE type='status' AND parent_id = $logged_in_user_id"); 
+						<?php 
+// Get logged-in user info
+$user = $this->session->userdata('user_info');
+$user_id = $user->id;
+$role_id = $user->role;
+
+// Default parent id
+$parent_id = $user_id;
+
+// If role is not 1 or 2 → use their parent_id from users table
+if(!in_array($role_id, [1,2])){
+    $userRow = $this->db->select('parent_id')
+                        ->from('users')
+                        ->where('id', $user_id)
+                        ->get()
+                        ->row();
+    if($userRow){
+        $parent_id = $userRow->parent_id;
+    }
+}
 ?>
-										<?php foreach($result as $row){ ?>
-											<option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
-										<?php } ?>
-										
-									</select>
-								</div>
-							</div>
-							<div class="form-group row mb-3">
-								
-								<div class="col-md-8">
-									<input placeholder="Next Meeting Date Time" type="datetime-local" name="next_followup" class="form-control">
-								</div>
 
-							</div>							
+<div class="modal-body">
+    <div class="form-group row mb-3">
+        <div class="col-md-8">
+            <select class="form-control" name="priority_id" required>
+                <option value="">--select priority--</option>
+                <?php 
+                $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
+                foreach($result as $row){ ?>
+                    <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
 
-							<div class="form-group row mb-3">
-								
-								<div class="col-md-8">
-									<textarea placeholder="Remark" class="form-control" name="remark"></textarea>
-								</div>
+    <div class="form-group row mb-3">
+        <div class="col-md-8">
+            <select class="form-control" name="status_id" required>
+                <option value="">--select status--</option>
+                <?php 
+                $result = get_all_list('master_table', " WHERE type='status' AND parent_id = $parent_id"); 
+                foreach($result as $row){ ?>
+                    <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
 
-							</div>
-						</div>
+    <div class="form-group row mb-3">
+        <div class="col-md-8">
+            <input placeholder="Next Meeting Date Time" type="datetime-local" name="next_followup" class="form-control">
+        </div>
+    </div>							
+
+    <div class="form-group row mb-3">
+        <div class="col-md-8">
+            <textarea placeholder="Remark" class="form-control" name="remark"></textarea>
+        </div>
+    </div>
+</div>
+
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 							<button type="submit" class="btn btn-primary">Submit</button>
