@@ -154,89 +154,87 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 <div class="row mt-2">
 
     <!-- ✅ Mobile View (Cards) -->
-    <div class="col-12 d-block d-md-none">
-        <div class="card1 flex-fill">
-            <div class="card-body">
-                <div class="notification-tab">
-                    <div class="tab-content">
-                        <div class="tab-pane active show" id="notification_tab_mobile" role="tabpanel">
-                            <div class="employee-noti-content">
-                                <ul class="employee-notification-list" id="list-mobile">
-                                    <?php foreach($result as $row){  
-                                        if($row->mobile_no){ 
-                                            $assign_to=get_row('users',' where id='.$row->assign_to);
-                                            $last_call=get_row('lead_status_log',' where lead_id='.$row->id.' order by id desc');
-                                            $status=get_row('master_table',' where id='.$row->status_id);
-                                    ?>
-                                    <li class="employee-notification-grid">
-                                        <div class="employee-notification-content">
-                                            <h6>
-                                                <input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>"> 
-                                                <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $row->mobile_no; ?>)">
-                                                    <?php echo ucwords($row->contact_name); ?> 
-                                                    <span class="small"><i class="fa fa-map-marker"></i> <?php echo $row->address; ?></span>
-                                                    <span class="badge bg-primary pull-right">
-                                                        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
-                                                    </span>
-                                                </a>
-                                            </h6>
-                                            <ul class="nav">
-                                                <li>Assigned To : <?php echo ucwords($assign_to->name); ?></li>
-                                                <li>Course : <?php echo $row->description; ?></li>
-                                            </ul>
-                                            <ul class="nav">
-                                                <li>Last Call : <?php echo date("d-M-Y h:i a",strtotime($last_call->created_at)); ?></li>
-                                                <li>
-                                                    <?php if($row->status_id==0){ ?>
-                                                        <span class="badge bg-success"> Fresh Lead </span>
-                                                    <?php }else{ ?>
-                                                        <span class="badge bg-info"><?php echo $status->name; ?></span>
-                                                    <?php } ?>
-                                                </li>
-                                            </ul>
-                                            <?php if($last_call->remark){ ?>
-                                            <ul class="nav">
-                                                <li>Remark: <?php echo $last_call->remark; ?></li>
-                                            </ul>
-                                            <?php } ?>
-                                            <ul class="nav">
-                                                <li>Next Followup : <?php if($row->next_followup!="0000-00-00 00:00:00"){ echo date("d-M-Y h:i a",strtotime($row->next_followup)); } ?></li>
-                                            </ul>
-                                            <ul class="nav">
-                                                <li>Date Created: <?php echo date("d-M-Y h:i a",strtotime($row->created_at)); ?></li>
-                                            </ul>
-                                            <ul class="nav">
-                                                <li class="full-width">
-<!-- Delete Button -->
-  <?php
-// Get the logged-in user object
-$logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+<div class="col-12 d-block d-md-none">
+    <div class="card1 flex-fill" style="padding: 1px; border-radius: 8px;">
+        <div class="card-body" style="padding: 1px;">
+            <div class="employee-noti-content">
+                <ul class="employee-notification-list" id="list-mobile">
+                    <?php foreach($result as $row){  
+                        if($row->mobile_no){ 
+                            $assign_to = get_row('users',' where id='.$row->assign_to);
+                            $last_call = get_row('lead_status_log',' where lead_id='.$row->id.' order by id desc');
+                            $status = get_row('master_table',' where id='.$row->status_id);
+                    ?>
+                    <li class="employee-notification-grid" style="margin-bottom: 15px;">
+                        <div class="employee-notification-content" style="font-size: 15px;">
+                            <h6 style="font-size: 16px; font-weight: 600;">
+                                <input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>" style="transform: scale(1.2); margin-right: 5px;"> 
+                                <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $row->mobile_no; ?>)">
+                                    <?php echo ucwords($row->contact_name); ?>
+                                    <span class="small d-block mt-1">
+                                        <i class="fa fa-map-marker"></i> <?php echo $row->address; ?>
+                                    </span>
+                                    <span class="badge bg-primary pull-right" style="font-size:13px; padding:6px 10px;">
+                                        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
+                                    </span>
+                                </a>
+                            </h6>
 
-// Split access into array if not empty
-$access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
-?>
-<?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-    <a href="<?= base_url('Leads/delete/'.$row->id) ?>" class="badge bg-danger" onclick="return confirm('Are you sure you want to delete this record?');">
-    <i class="fas fa-trash"></i>
-</a>
-<?php endif; ?>
+                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+                                <span>Assigned To: <b><?php echo ucwords($assign_to->name); ?></b></span>
+                                <span>Course: <b><?php echo $row->description; ?></b></span>
+                            </div>
 
+                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+                                <span>Last Call: <?php echo date("d-M-Y h:i a", strtotime($last_call->created_at)); ?></span>
+                                <span>
+                                    <?php if($row->status_id==0){ ?>
+                                        <span class="badge bg-success" style="font-size:13px; padding:6px 10px;">Fresh Lead</span>
+                                    <?php }else{ ?>
+                                        <span class="badge bg-info" style="font-size:13px; padding:6px 10px;"><?php echo $status->name; ?></span>
+                                    <?php } ?>
+                                </span>
+                            </div>
 
+                            <?php if($last_call->remark){ ?>
+                            <div class="mt-2" style="font-size:14px;">Remark: <i><?php echo $last_call->remark; ?></i></div>
+                            <?php } ?>
 
-                                                <span onclick="window.location.href='<?php echo base_url(); ?>Leads/lead_details/<?php echo $row->id; ?>'" class="pull-right badge bg-primary"><i class="fas fa-eye"></i></span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </li>
-                                    <?php } } ?>
-                                </ul>
+                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+                                <span>Next Followup: <?php if($row->next_followup!="0000-00-00 00:00:00"){ echo date("d-M-Y h:i a", strtotime($row->next_followup)); } ?></span>
+                                <span>Date Created: <?php echo date("d-M-Y h:i a", strtotime($row->created_at)); ?></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <?php
+                                $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+                                $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
+                                ?>
+                                <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                                    <a href="<?= base_url('Leads/delete/'.$row->id) ?>" 
+                                       class="btn btn-danger"
+                                       style="padding:8px 14px; font-size:13px;"
+                                       onclick="return confirm('Are you sure you want to delete this record?');">
+                                       <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                <?php endif; ?>
+
+                                <button onclick="window.location.href='<?php echo base_url(); ?>Leads/lead_details/<?php echo $row->id; ?>'" 
+                                        class="btn btn-primary"
+                                        style="padding:8px 14px; font-size:13px;">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </li>
+                    <?php } } ?>
+                </ul>
             </div>
         </div>
     </div>
+</div>
+
+
 
     <!-- ✅ Desktop View (Table) -->
     <div class="col-12 d-none d-md-block">
