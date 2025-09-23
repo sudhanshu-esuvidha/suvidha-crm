@@ -51,6 +51,27 @@ elseif (!empty($logged_in_user->access)) {
 
 
                             </div>
+<!-- Status Filter -->
+<form method="get" action="<?= base_url('Task'); ?>" class="row g-2 mb-3">
+    <div class="col-8 col-md-3">
+        <select name="status_filter" class="form-control" onchange="this.form.submit()">
+            <option value="">All (Active Default)</option>
+            <?php foreach ($status_options as $status): ?>
+                <option value="<?= $status['id']; ?>" 
+                    <?= ($status_filter == $status['id']) ? 'selected' : ''; ?>>
+                    <?= $status['name']; ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-4 col-md-2">
+        <button type="submit" class="btn btn-info w-100">
+            <i class="fas fa-filter"></i>
+            <span class="d-none d-md-inline"> Filter</span>
+        </button>
+    </div>
+</form>
+
 
                             <!-- Success message -->
                             <?php if ($this->session->flashdata('success')): ?>
@@ -170,58 +191,83 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                     $observerDisplay = !empty($task['observer']) ? $task['observer'] : '';
                 }
             ?>
-            <div class="col-12">
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><?= $task['title']; ?></h5>
-                        <p class="mb-1"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
-                        <p class="mb-1"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
+         <div class="col-12">
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title"><?= $task['title']; ?></h5>
+            <p class="mb-1"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
+            <p class="mb-1"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
 
-                        <!-- Show Observer only if not empty -->
-                    <?php if (!empty($observerDisplay)): ?>
-    <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
-<?php endif; ?>
+            <!-- Show Observer only if not empty -->
+            <?php if (!empty($observerDisplay)): ?>
+                <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
+            <?php endif; ?>
 
-                        <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
-                        <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
-                        <p class="mb-1"><strong>End Date:</strong> <?= $task['end_date']; ?></p>
+            <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
+            <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
+            <p class="mb-1"><strong>End Date:</strong> <?= $task['end_date']; ?></p>
 
-                        <p class="mb-1">
-                            <strong>Status:</strong> 
-                            <span class="badge <?= $task['status_name'] === 'Active' ? 'bg-success' : 'bg-secondary'; ?>" 
-                                  style="cursor:pointer;" 
-                                  onclick="changeStatus(<?= $task['id']; ?>)">
-                                <?= $task['status_name'] ?? 'Active'; ?>
-                            </span>
-                        </p>
+            <?php
+            // Determine if current user is an observer
+            $observers = !empty($task['observer']) ? explode(',', $task['observer']) : [];
+            $isObserver = in_array($user->id, $observers);
 
-                        <?php if(!empty($task['status_changed_by']) || !empty($task['remark'])): ?>
-                            <p class="mb-1"><strong>Changed By:</strong> <?= $task['status_changed_by'] ?? ''; ?></p>
-                            <p class="mb-1"><strong>Remark:</strong> <?= $task['remark'] ?? ''; ?></p>
-                        <?php endif; ?>
+            // Determine badge class based on status
+            $status = strtolower($task['status_name'] ?? 'active');
+            switch($status) {
+                case 'active': $badgeClass = 'bg-success'; break;
+                case 'pending': $badgeClass = 'bg-warning text-dark'; break;
+                case 'completed': $badgeClass = 'bg-primary'; break;
+                case 'cancelled': $badgeClass = 'bg-danger'; break;
+                default: $badgeClass = 'bg-secondary'; break;
+            }
 
-                        <div class="mt-3 d-flex justify-content-between">
-                            <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
-                                <!-- Edit Button -->
-                                <button style="color: black;" class="btn btn-sm btn-warning"
-                                    onclick="editTask(<?= $task['id']; ?>)">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                            <?php endif; ?>
+            // Get username of who changed status
+            $changedBy = !empty($task['status_changed_by']) 
+                         ? ($this->db->get_where('users', ['id' => $task['status_changed_by']])->row()->username ?? '') 
+                         : '';
+            ?>
 
-                            <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-                                <!-- Delete Button -->
-                                <a style="color: white;" 
-                                   href="<?= base_url('Task/delete/' . $task['id']); ?>"
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Are you sure you want to delete this task?')">
-                                    <i class="fas fa-trash"></i> Delete
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
+            <p class="mb-1">
+                <strong>Status:</strong> 
+                <span class="badge <?= $badgeClass; ?> px-3 py-2" 
+                      style="cursor:<?= $isObserver ? 'not-allowed' : 'pointer'; ?>;"
+                      <?= $isObserver ? '' : "onclick=\"changeStatus({$task['id']})\""; ?>>
+                    <?= ucfirst($task['status_name'] ?? 'Active'); ?>
+                    <?php if($isObserver): ?>
+                        <small class="text-muted">(Observer)</small>
+                    <?php endif; ?>
+                </span>
+            </p>
+
+            <?php if(!empty($changedBy) || !empty($task['remark'])): ?>
+                <p class="mb-1"><strong>Changed By:</strong> <?= $changedBy; ?></p>
+                <p class="mb-1"><strong>Remark:</strong> <?= $task['remark'] ?? ''; ?></p>
+            <?php endif; ?>
+
+            <div class="mt-3 d-flex justify-content-between">
+                <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+                    <!-- Edit Button -->
+                    <button style="color: black;" class="btn btn-sm btn-warning"
+                        onclick="editTask(<?= $task['id']; ?>)">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                <?php endif; ?>
+
+                <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                    <!-- Delete Button -->
+                    <a style="color: white;" 
+                       href="<?= base_url('Task/delete/' . $task['id']); ?>"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Are you sure you want to delete this task?')">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                <?php endif; ?>
             </div>
+        </div>
+    </div>
+</div>
+
         <?php endforeach; ?>
     <?php else: ?>
         <div class="col-12">
@@ -255,18 +301,28 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 <input type="hidden" name="parent_id" value="<?= $user->parent_id ?>">
 <input type="hidden" name="status_changed_by" value="<?= $user->name?>">
                     <div class="mb-3">
-                        <label class="form-label">Select Status</label>
-                       <select name="status_id" id="status_id" class="form-control" required style="color: black;">
+                      <label class="form-label">Select Status</label>
+<select name="status_id" id="status_id" class="form-control" required style="color: black;">
     <option value="">Select Status</option>
     <?php 
+    // Determine parent_id based on role
+    if (in_array($user->role, [1, 2])) {
+        $parent_id = $user->id;   // use own ID if role is 1 or 2
+    } else {
+        $parent_id = $user->parent_id; // otherwise use parent_id
+    }
+
+    // Fetch status options
     $status_options = $this->db
-        ->where(['type' => 'status', 'parent_id' => $user->parent_id ])
+        ->where(['type' => 'status', 'parent_id' => $parent_id])
         ->get('master_table')
         ->result_array();
-    foreach($status_options as $status): ?>
+
+    foreach ($status_options as $status): ?>
         <option value="<?= $status['id'] ?>"><?= $status['name'] ?></option>
     <?php endforeach; ?>
 </select>
+
                     </div>
 
                     <div class="mb-3">

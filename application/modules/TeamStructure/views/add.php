@@ -60,7 +60,14 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Branch <span class="text-danger">*</span></label>
-                                            <?php $result=get_all_list('master_table',' where type="branch"'); ?>
+                                           <?php
+$user_id = $this->session->userdata('user_info')->id;
+$user    = $this->db->get_where('users', ['id' => $user_id])->row();
+
+$parent_id = ($user->role == 1 || $user->role == 2) ? $user_id : $user->parent_id;
+
+$result = get_all_list('master_table', 'WHERE type="branch" AND parent_id="'.$parent_id.'"');
+?>
                                             <select class="form-select" name="branch" required>
                                                 <option value="">--Select Branch---</option>
                                                 <?php foreach($result as $row){ ?>

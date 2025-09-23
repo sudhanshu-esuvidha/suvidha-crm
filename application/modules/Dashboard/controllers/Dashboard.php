@@ -22,123 +22,132 @@ class Dashboard extends MY_Controller
         // Fetch logged-in user
         $user = $this->db->get_where('users', ['id'=>$user_id])->row();
         $this->session->set_userdata('user_info', $user);
-        $data['user'] = $user;
-        $data['heading'] = "DASHBOARD";
+          $role    = $user->role;
+    $parent_id = $user->parent_id;
+       $data['total_leads'] = $this->db
+        ->where('assign_to', $user_id)
+        ->count_all_results('leads');
 
-        $today = date('Y-m-d');
-        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+    // ------------------ Tasks ------------------
+    $data['total_tasks'] = $this->db
+        ->where('assigned_to', $user_id)
+        ->count_all_results('tasks');
 
-        // -----------------------
-        // Dashboard Cards
-        // -----------------------
-        $data['today_followups'] = $this->db->where('created_by', $user_id)
-                                            ->where('DATE(next_followup)', $today)
-                                            ->count_all_results('leads');
+    // ------------------ Dynamic Dates ------------------
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $today     = date('Y-m-d');
+    $tomorrow  = date('Y-m-d', strtotime('+1 day'));
 
-        $data['pending_followups'] = $this->db->where('created_by', $user_id)
-                                              ->where('DATE(next_followup) <', $today)
-                                              ->count_all_results('leads');
+    // ------------------ Tasks Counts ------------------
+    $data['yesterday_tasks'] = $this->db
+        ->where('assigned_to', $user_id)
+        ->where('DATE(created_at)', $yesterday)
+        ->count_all_results('tasks');
 
-        $data['tomorrow_followups'] = $this->db->where('created_by', $user_id)
-                                               ->where('DATE(next_followup)', $tomorrow)
-                                               ->count_all_results('leads');
+    $data['today_tasks'] = $this->db
+        ->where('assigned_to', $user_id)
+        ->where('DATE(created_at)', $today)
+        ->count_all_results('tasks');
 
-        $data['total_leads'] = $this->db->where('created_by', $user_id)
-                                        ->count_all_results('leads');
+    $data['tomorrow_tasks'] = $this->db
+        ->where('assigned_to', $user_id)
+        ->where('DATE(created_at)', $tomorrow)
+        ->count_all_results('tasks');
 
-        // -----------------------
-        // Weekly Line Chart (Users & Leads)
-        // -----------------------
-        $weekStart = date('Y-m-d', strtotime('monday this week'));
-        $weekEnd   = date('Y-m-d', strtotime('sunday this week'));
+    // ------------------ Leads Counts ------------------
+    $data['yesterday_leads'] = $this->db
+        ->where('assign_to', $user_id)
+        ->where('DATE(created_at)', $yesterday)
+        ->count_all_results('leads');
 
-        // Prepare day labels Mon-Sun
-        $weekLabels = [];
-        $weekDays = [];
-        for($i=0; $i<7; $i++){
-            $day = date('Y-m-d', strtotime($weekStart." +$i day"));
-            $weekDays[] = $day;
-            $weekLabels[] = date('D', strtotime($day));
-        }
+    $data['today_leads'] = $this->db
+        ->where('assign_to', $user_id)
+        ->where('DATE(created_at)', $today)
+        ->count_all_results('leads');
 
-        // Users Weekly
-        $users_weekly = $this->db->select("DATE(created_at) as date, COUNT(*) as count")
-                                 ->from("users")
-                                 ->where("DATE(created_at) >=", $weekStart)
-                                 ->where("DATE(created_at) <=", $weekEnd)
-                                 ->where("parent_id", $user->parent_id ?? $user->id)
-                                 ->group_by("DATE(created_at)")
-                                 ->get()->result_array();
+    $data['tomorrow_leads'] = $this->db
+        ->where('assign_to', $user_id)
+        ->where('DATE(created_at)', $tomorrow)
+        ->count_all_results('leads');
 
-        // Leads Weekly
-        $leads_weekly = $this->db->select("DATE(created_at) as date, COUNT(*) as count")
-                                 ->from("leads")
-                                 ->where("DATE(created_at) >=", $weekStart)
-                                 ->where("DATE(created_at) <=", $weekEnd)
-                                 ->where("created_by", $user_id)
-                                 ->group_by("DATE(created_at)")
-                                 ->get()->result_array();
+    // ------------------ Leads Follow-up ------------------
+    $data['today_followups'] = $this->db
+        ->where('assign_to', $user_id)
+        ->where('DATE(next_followup)', $today)
+        ->count_all_results('leads');
 
-        // Map counts to week days
-        $usersCount = []; $leadsCount = [];
-        $usersData = array_column($users_weekly,'count','date');
-        $leadsData = array_column($leads_weekly,'count','date');
+    $data['tomorrow_followups'] = $this->db
+        ->where('assign_to', $user_id)
+        ->where('DATE(next_followup)', $tomorrow)
+        ->count_all_results('leads');
 
-        foreach($weekDays as $d){
-            $usersCount[] = isset($usersData[$d]) ? (int)$usersData[$d] : 0;
-            $leadsCount[] = isset($leadsData[$d]) ? (int)$leadsData[$d] : 0;
-        }
+  
 
-        $data['weekLabels'] = $weekLabels;
-        $data['usersCount'] = $usersCount;
-        $data['leadsCount'] = $leadsCount;
+    // ------------------ Statuses ------------------
+    $master_parent_id = ($role == 1 || $role == 2) ? $user_id : $parent_id;
 
-        // -----------------------
-        // Daily Leads Distribution (Bar Chart)
-        // -----------------------
-        $dailyLeads = [];
-        foreach($weekDays as $d){
-            $count = $this->db->where('created_by', $user_id)
-                              ->where('DATE(created_at)', $d)
-                              ->count_all_results('leads');
-            $dailyLeads[] = (int)$count;
-        }
-        $data['dailyLeads'] = $dailyLeads;
+   if ($user->role == 1) {
+    // Role 1: use own ID
+    $master_parent_id = $user_id;
+} else {
+    // Other roles: use parent_id from users table
+    $master_parent_id = $user->parent_id;
+}
 
-        // -----------------------
-        // Lead Status Breakdown (Doughnut Chart)
-        // -----------------------
-        $statuses = $this->db->select("status_id, COUNT(*) as count")
-                             ->from("leads")
-                             ->where("created_by", $user_id)
-                             ->group_by("status_id")
-                             ->get()->result_array();
+// Fetch statuses
+$this->db->select('*');
+$this->db->from('master_table');
+$this->db->where('parent_id', $master_parent_id);
+$this->db->where('type', 'status');
+$statuses = $this->db->get()->result_array();
 
-        $statusLabels = []; $statusCount = [];
-        foreach($statuses as $s){
-            $statusLabels[] = "Status ".$s['status_id'];
-            $statusCount[] = (int)$s['count'];
-        }
-        $data['statusLabels'] = $statusLabels;
-        $data['statusCount'] = $statusCount;
+$data['statuses'] = $statuses;
+    // ------------------ Status-wise Task & Lead Counts ------------------
+    foreach ($statuses as $status) {
+        $status_id   = $status['id'];
+        $status_name = $status['name'] ?? $status['status'];
 
-        // -----------------------
-        // Growth Trends (Area Chart) - Monthly Leads
-        // -----------------------
-        $monthLabels = []; $monthCounts = [];
-        for($m=1; $m<=12; $m++){
-            $monthLabels[] = date('M', mktime(0,0,0,$m,1));
-            $count = $this->db->select("COUNT(*) as count")
-                              ->from('leads')
-                              ->where('created_by', $user_id)
-                              ->where('MONTH(created_at)', $m)
-                              ->get()->row()->count ?? 0;
-            $monthCounts[] = (int)$count;
-        }
-        $data['monthLabels'] = $monthLabels;
-        $data['monthCounts'] = $monthCounts;
+        // Task Status
+        $data['yesterday_task_status'][$status_name] = $this->db
+            ->where('assigned_to', $user_id)
+            ->where('DATE(created_at)', $yesterday)
+            ->where('status_id', $status_id)
+            ->count_all_results('tasks');
 
-        // Load view
-        $this->load->view('dashboard', $data);
+        $data['today_task_status'][$status_name] = $this->db
+            ->where('assigned_to', $user_id)
+            ->where('DATE(created_at)', $today)
+            ->where('status_id', $status_id)
+            ->count_all_results('tasks');
+
+        $data['tomorrow_task_status'][$status_name] = $this->db
+            ->where('assigned_to', $user_id)
+            ->where('DATE(created_at)', $tomorrow)
+            ->where('status_id', $status_id)
+            ->count_all_results('tasks');
+
+
+// Lead Status
+        $data['yesterday_lead_status'][$status_name] = $this->db
+            ->where('assign_to', $user_id)
+            ->where('DATE(created_at)', $yesterday)
+            ->where('status_id', $status_id)
+            ->count_all_results('leads');
+
+        $data['today_lead_status'][$status_name] = $this->db
+            ->where('assign_to', $user_id)
+            ->where('DATE(created_at)', $today)
+            ->where('status_id', $status_id)
+            ->count_all_results('leads');
+
+        $data['tomorrow_lead_status'][$status_name] = $this->db
+            ->where('assign_to', $user_id)
+            ->where('DATE(created_at)', $tomorrow)
+            ->where('status_id', $status_id)
+            ->count_all_results('leads');
     }
+
+    // Load dashboard view
+    $this->load->view('dashboard', $data);
+}
 }

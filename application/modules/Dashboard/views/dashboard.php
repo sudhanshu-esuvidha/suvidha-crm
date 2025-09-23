@@ -1,206 +1,233 @@
 <!DOCTYPE html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg">
-<?php $this->load->view('Template/head',$data); ?>
-<style type="text/css">
-    h4{
-        color: white;
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
+<?php $this->load->view('Template/head'); ?>
+
+<style>
+    /* Dashboard cards */
+    .dashboard-card {
+        border-radius: 0.75rem;
+        height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .dashboard-card h6 { margin: 0; font-size: 0.9rem; }
+    .dashboard-card h3 { margin: 0; font-size: 1.3rem; }
+
+    /* Chart card override */
+    .chart-card {
+        height: 320px; /* taller cards for charts */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 15px;
+    }
+
+    .chart-card canvas {
+        height: 250px !important;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 576px) {
+        .dashboard-card { height: 100px; padding: 5px; }
+        .dashboard-card h6 { font-size: 0.75rem; }
+        .dashboard-card h3 { font-size: 1.1rem; }
+
+        .chart-card { height: 220px; }
+        .chart-card canvas { height: 160px !important; }
     }
 </style>
+
 <body>
-    <?php  
-        $date  = date("Y-m-d");
-        $date2 = date('Y-m-d', strtotime($date.' + 1 day')); 
-    ?>
-    <div class="main-wrapper">
-        <!-- Header -->
-        <div class="header shadow-sm">
-            <?php $this->load->view('Template/header',$data); ?>
+<div class="main-wrapper">
+    <div class="header">
+        <?php $this->load->view('Template/header'); ?>
+        <div class="page-wrapper">
+            <div class="content container-fluid pb-0">
 
-            <!-- Page Wrapper -->
-            <div class="page-wrapper">
-                <div class="content container-fluid pb-0">
-                    <?php $this->load->view('Template/page_header',$data); ?>
+                <?php $this->load->view('Template/page_header'); ?>
 
-                    <!-- DASHBOARD SECTION -->
-                    <div class="dashboard-container">
-                        <div class="row g-4">
-                            <!-- 4 Main Cards -->
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient1">
-                                    <h4>Today Follow-ups</h4>
-                                    <p class="number"><?= $today_followups ?? 0 ?></p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient2">
-                                    <h4>Pending Follow-ups</h4>
-                                    <p class="number"><?= $pending_followups ?? 0 ?></p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient3">
-                                    <h4>Tomorrow Follow-ups</h4>
-                                    <p class="number"><?= $tomorrow_followups ?? 0 ?></p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="dashboard-card gradient4">
-                                    <h4>Total Leads</h4>
-                                    <p class="number"><?= $total_leads ?? 0 ?></p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Info Cards -->
+                <div class="row mb-3">
+                  <div class="col-6 col-sm-6 col-md-6">
+    <a href="<?= base_url('Leads/list'); ?>" class="text-decoration-none">
+        <div class="dashboard-card bg-info text-white">
+            <h6>Total Leads</h6>
+            <h3><?= $total_leads; ?></h3>
+        </div>
+    </a>
+</div>
 
-                        <!-- Chart Section -->
-                        <div class="row mt-5 g-4">
-                            <!-- Line Chart -->
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm p-4">
-                                    <h5 class="mb-3">Users & Leads (Weekly)</h5>
-                                    <canvas id="lineChart" height="160"></canvas>
-                                </div>
-                            </div>
+<div class="col-6 col-sm-6 col-md-6">
+    <a href="<?= base_url('Task'); ?>" class="text-decoration-none">
+        <div class="dashboard-card bg-success text-white">
+            <h6>Total Tasks</h6>
+            <h3><?= $total_tasks; ?></h3>
+        </div>
+    </a>
+</div>
 
-                            <!-- Bar Chart -->
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm p-4">
-                                    <h5 class="mb-3">Daily Leads Distribution</h5>
-                                    <canvas id="barChart" height="160"></canvas>
-                                </div>
-                            </div>
-
-                            <!-- Doughnut Chart -->
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm p-4">
-                                    <h5 class="mb-3">Lead Status Breakdown</h5>
-                                    <canvas id="doughnutChart" height="160"></canvas>
-                                </div>
-                            </div>
-
-                            <!-- Area Chart -->
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm p-4">
-                                    <h5 class="mb-3">Growth Trends</h5>
-                                    <canvas id="areaChart" height="160"></canvas>
-                                </div>
-                            </div>
+                    <div class="col-6 col-sm-6 col-md-6">
+                        <div class="dashboard-card bg-warning text-dark">
+                            <h6>Today's Follow-ups</h6>
+                            <h3><?= $today_followups; ?></h3>
                         </div>
                     </div>
-                    <!-- END DASHBOARD -->
+                    <div class="col-6 col-sm-6 col-md-6">
+                        <div class="dashboard-card bg-danger text-white">
+                            <h6>Tomorrow's Follow-ups</h6>
+                            <h3><?= $tomorrow_followups; ?></h3>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Charts -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="dashboard-card chart-card">
+                            <h6>Today's Task Status</h6>
+                            <canvas id="taskStatusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="dashboard-card chart-card">
+                            <h6>Today's Lead Status</h6>
+                            <canvas id="leadStatusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="dashboard-card chart-card">
+                            <h6>Tasks Trend</h6>
+                            <canvas id="tasksTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="dashboard-card chart-card">
+                            <h6>Leads Trend</h6>
+                            <canvas id="leadsTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+            <?php $this->load->view('Template/footer'); ?>
         </div>
-
-        <!-- Footer -->
-        <?php $this->load->view('Template/footer',$data); ?>
     </div>
+</div>
 
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Line Chart - Users & Leads Weekly
-    new Chart(document.getElementById('lineChart'), {
-        type: 'line',
+    // Task Status Pie Chart
+    const taskLabels = <?= json_encode(array_keys($today_task_status)); ?>;
+    const taskData   = <?= json_encode(array_values($today_task_status)); ?>;
+    new Chart(document.getElementById('taskStatusChart').getContext('2d'), {
+        type: 'pie',
         data: {
-            labels: <?= json_encode($weekLabels) ?>,
-            datasets: [
-                {
-                    label: 'Users',
-                    data: <?= json_encode($usersCount) ?>,
-                    borderColor: '#2575fc',
-                    backgroundColor: 'rgba(37,117,252,0.2)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'Leads',
-                    data: <?= json_encode($leadsCount) ?>,
-                    borderColor: '#38ef7d',
-                    backgroundColor: 'rgba(56,239,125,0.2)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: { responsive: true }
-    });
-
-    // Bar Chart - Daily Leads Distribution
-    new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode($weekLabels) ?>,
+            labels: taskLabels.length ? taskLabels : ["No Data"],
             datasets: [{
-                label: 'Leads',
-                data: <?= json_encode($dailyLeads) ?>,
-                backgroundColor: '#f7971e'
+                data: taskData.length ? taskData : [1],
+                backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d']
             }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Doughnut Chart - Lead Status Breakdown
-    new Chart(document.getElementById('doughnutChart'), {
-        type: 'doughnut',
+    // Lead Status Pie Chart
+    const leadLabels = <?= json_encode(array_keys($today_lead_status)); ?>;
+    const leadData   = <?= json_encode(array_values($today_lead_status)); ?>;
+    new Chart(document.getElementById('leadStatusChart').getContext('2d'), {
+        type: 'pie',
         data: {
-            labels: <?= json_encode($statusLabels) ?>,
+            labels: leadLabels.length ? leadLabels : ["No Data"],
             datasets: [{
-                data: <?= json_encode($statusCount) ?>,
-                backgroundColor: ['#f7971e','#ff416c','#38ef7d','#2575fc','#ffbb33','#33b5e5']
+                data: leadData.length ? leadData : [1],
+                backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d']
             }]
         },
-        options: { responsive: true }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Area Chart - Monthly Growth Trends
-    new Chart(document.getElementById('areaChart'), {
-        type: 'line',
-        data: {
-            labels: <?= json_encode($monthLabels) ?>,
-            datasets: [{
-                label: 'Leads',
-                data: <?= json_encode($monthCounts) ?>,
-                borderColor: '#ff4b2b',
-                backgroundColor: 'rgba(255,75,43,0.3)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: { responsive: true }
-    });
+    // Tasks Trend Bar Chart
+   // ---- TASKS TREND (stacked by status) ----
+const yesterdayTaskStatus = <?= json_encode($yesterday_task_status); ?>;
+const todayTaskStatus     = <?= json_encode($today_task_status); ?>;
+const tomorrowTaskStatus  = <?= json_encode($tomorrow_task_status); ?>;
+
+const taskStatuses = [...new Set([
+    ...Object.keys(yesterdayTaskStatus),
+    ...Object.keys(todayTaskStatus),
+    ...Object.keys(tomorrowTaskStatus)
+])];
+
+// Assign colors dynamically (fallback cycling)
+const taskColors = ['#28a745','#ffc107','#17a2b8','#dc3545','#6c757d','#007bff'];
+
+const taskDatasets = taskStatuses.map((status, i) => ({
+    label: status,
+    data: [
+        yesterdayTaskStatus[status] ?? 0,
+        todayTaskStatus[status] ?? 0,
+        tomorrowTaskStatus[status] ?? 0
+    ],
+    backgroundColor: taskColors[i % taskColors.length]
+}));
+
+new Chart(document.getElementById('tasksTrendChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: ["Yesterday", "Today", "Tomorrow"],
+        datasets: taskDatasets
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { tooltip: { mode: 'index', intersect: false } },
+        scales: { x: { stacked: true }, y: { stacked: true } }
+    }
+});
+
+// ---- LEADS TREND (stacked by status) ----
+const yesterdayLeadStatus = <?= json_encode($yesterday_lead_status); ?>;
+const todayLeadStatus     = <?= json_encode($today_lead_status); ?>;
+const tomorrowLeadStatus  = <?= json_encode($tomorrow_lead_status); ?>;
+
+const leadStatuses = [...new Set([
+    ...Object.keys(yesterdayLeadStatus),
+    ...Object.keys(todayLeadStatus),
+    ...Object.keys(tomorrowLeadStatus)
+])];
+
+// Reuse same color set
+const leadDatasets = leadStatuses.map((status, i) => ({
+    label: status,
+    data: [
+        yesterdayLeadStatus[status] ?? 0,
+        todayLeadStatus[status] ?? 0,
+        tomorrowLeadStatus[status] ?? 0
+    ],
+    backgroundColor: taskColors[i % taskColors.length]
+}));
+
+new Chart(document.getElementById('leadsTrendChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: ["Yesterday", "Today", "Tomorrow"],
+        datasets: leadDatasets
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { tooltip: { mode: 'index', intersect: false } },
+        scales: { x: { stacked: true }, y: { stacked: true } }
+    }
+});
+
 </script>
-
-
-    <!-- INTERNAL CSS -->
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: #f7f9fc;
-            color: #333;
-        }
-        .dashboard-container {
-            margin-top: 20px;
-        }
-        .dashboard-card {
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            color: #fff;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        }
-        .dashboard-card h4 { font-size: 16px; margin-bottom: 10px; }
-        .dashboard-card .number { font-size: 28px; font-weight: bold; }
-        /* Gradient Styles */
-        .gradient1 { background: linear-gradient(135deg,#6a11cb,#2575fc); }
-        .gradient2 { background: linear-gradient(135deg,#11998e,#38ef7d); }
-        .gradient3 { background: linear-gradient(135deg,#f7971e,#ffd200); }
-        .gradient4 { background: linear-gradient(135deg,#ff416c,#ff4b2b); }
-    </style>
 </body>
 </html>
