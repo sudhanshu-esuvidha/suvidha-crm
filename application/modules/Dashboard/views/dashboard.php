@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 <?php $this->load->view('Template/head'); ?>
+<!-- Bootstrap Icons CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 <style>
     /* Dashboard cards */
@@ -54,37 +56,56 @@
 
                 <!-- Info Cards -->
                 <div class="row mb-3">
-                  <div class="col-6 col-sm-6 col-md-6">
+<div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Leads/list'); ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-info text-white">
-            <h6>Total Leads</h6>
-            <h3><?= $total_leads; ?></h3>
+        <div class="dashboard-card bg-info text-white position-relative p-3">
+            <!-- Icon at top-left -->
+            <i class="bi bi-people-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+
+            <!-- Number and label -->
+            <h3 style="color:white; margin-top: 30px;"><?= $total_leads; ?></h3>
+            <h6 class="mt-2" style="color:white;">Total Leads</h6>
         </div>
     </a>
 </div>
 
-<div class="col-6 col-sm-6 col-md-6">
+<div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Task'); ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-success text-white">
-            <h6>Total Tasks</h6>
-            <h3><?= $total_tasks; ?></h3>
+        <div class="dashboard-card bg-success text-white position-relative p-3">
+            <!-- Professional Icon -->
+            <i class="bi bi-kanban-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+
+            <!-- Number and label -->
+            <h3 style="color:white; margin-top: 30px;"><?= $total_tasks; ?></h3>
+            <h6 class="mt-2" style="color:white;">Total Tasks</h6>
         </div>
     </a>
 </div>
 
-                    <div class="col-6 col-sm-6 col-md-6">
-                        <div class="dashboard-card bg-warning text-dark">
-                            <h6>Today's Follow-ups</h6>
-                            <h3><?= $today_followups; ?></h3>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-6 col-md-6">
-                        <div class="dashboard-card bg-danger text-white">
-                            <h6>Tomorrow's Follow-ups</h6>
-                            <h3><?= $tomorrow_followups; ?></h3>
-                        </div>
-                    </div>
-                </div>
+<div class="col-6 col-sm-6 col-md-6 position-relative">
+    <div class="dashboard-card bg-warning text-white position-relative p-3">
+        <!-- Professional Icon -->
+        <i class="bi bi-clock-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+
+        <!-- Number and label -->
+        <h3 style="color:white; margin-top: 30px;"><?= $today_followups; ?></h3>
+        <h6 class="mt-2" style="color:white;">Today's Follow-ups</h6>
+    </div>
+</div>
+
+<div class="col-6 col-sm-6 col-md-6 position-relative">
+    <div class="dashboard-card bg-danger text-white position-relative p-3">
+        <!-- Professional Icon -->
+        <i class="bi bi-calendar-check-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+
+        <!-- Number and label -->
+        <h3 style="color:white; margin-top: 30px;"><?= $tomorrow_followups; ?></h3>
+        <h6 class="mt-2" style="color:white;">Tomorrow's Follow-ups</h6>
+    </div>
+</div>
+
+
+
 
                 <!-- Charts -->
                 <div class="row mb-3">
@@ -113,7 +134,12 @@
                         </div>
                     </div>
                 </div>
-
+<div class="col-12">
+    <div class="dashboard-card chart-card">
+        <h6>Lead Sources</h6>
+        <canvas id="leadSourcesChart"></canvas>
+    </div>
+</div>
             </div>
             <?php $this->load->view('Template/footer'); ?>
         </div>
@@ -122,6 +148,35 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Convert PHP array into JS arrays
+    const leadSources = <?= json_encode(array_column($lead_sources, 'source')); ?>;
+    const leadCounts  = <?= json_encode(array_column($lead_sources, 'lead_count')); ?>;
+
+    new Chart(document.getElementById('leadSourcesChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: leadSources.length ? leadSources : ["No Data"],
+            datasets: [{
+                data: leadCounts.length ? leadCounts : [1],
+                backgroundColor: [
+                    '#007bff','#28a745','#ffc107','#dc3545',
+                    '#17a2b8','#6610f2','#e83e8c','#20c997',
+                    '#fd7e14','#6c757d'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+
 <script>
     // Task Status Pie Chart
     const taskLabels = <?= json_encode(array_keys($today_task_status)); ?>;

@@ -19,18 +19,19 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </a>
         </li>
     <?php else: ?>
+             <li>
+            <a href="<?php echo base_url(); ?>Leads/list">
+                <i class="la la-chart-line"></i> <span>Leads</span>
+            </a>
+        </li>
+                
         <li>
             <a href="<?php echo base_url(); ?>Task">
                 <i class="la la-tasks"></i> <span>Task Management</span>
             </a>
         </li>
 
-        <li>
-            <a href="<?php echo base_url(); ?>Leads/list">
-                <i class="la la-chart-line"></i> <span>Leads</span>
-            </a>
-        </li>
-                
+   
     <?php endif; ?>
 
     <?php if (in_array('4', $access_array) || $logged_in_user->parent_id == 1): ?>

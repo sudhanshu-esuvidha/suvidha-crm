@@ -1,7 +1,35 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 <?php $this->load->view('Template/head',$data); ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+	.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #011c55; /* blue color, you can change */
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 60px;
+    font-size: 28px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    z-index: 9999;
+    transition: background-color 0.3s;
+}
+
+.floating-btn:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+    color: #fff;
+}
+
+</style>
 <body>
 	<?php  $date=date("Y-m-d");
 	$date2=date('Y-m-d', strtotime($date.' + 1 day')); ?>
@@ -25,12 +53,12 @@
 				<ul class="nav nav-tabs" role="tablist">
 					<li>
 						<a href="#" class="active" data-bs-toggle="tab" data-bs-target="#notification_tab" aria-selected="true" role="tab">
-							<i class="la la-bell"></i> Contact Information
+							<i class="la la-bell"></i> Details
 						</a>
 					</li>
 					<li>
 						<a href="#" data-bs-toggle="tab" data-bs-target="#schedule_tab" aria-selected="false" tabindex="-1" role="tab">
-							<i class="la la-list-alt"></i> Interaction History
+							<i class="la la-list-alt"></i>  History
 						</a>
 					</li>
 				</ul>
@@ -91,27 +119,90 @@
 											</div>
 						</div>
 					</div>
-					<div class="tab-pane fade" id="schedule_tab" role="tabpanel">
-						<div class="employee-noti-content">
-						<div class="tracking-list">
-            	<?php $logs=get_all_list('lead_status_log',' where lead_id='.$data->id.' order by id asc'); ?>
-            	<?php foreach($logs as $log){ ?>
-               <div class="tracking-item">
-                      <div class="tracking-icon status-intransit">
-                         <!--<img style="width:35px;" src="<?php echo base_url(); ?>assets/backend/images/button.png">-->
-                          <i class="fa fa-history"></i> 
-                      </div>
-                      <div class="tracking-date"><?php echo date('M, d Y',strtotime($row->created_at)); ?><span><?php echo date('h:i a',strtotime($log->created_at)); ?></span></div>
-                      <p>User: <?php $createdBy=get_row('users',' where id='.$log->created_by); echo $createdBy->name; ?></p>
-                      <p>Status:<?php  if($log->status==0){?> <span class="text-success">Created</span>   <?php  }else{ $status=get_row('master_table',' where id='.$log->status); ?><span class="text-info"><?php echo $status->name; ?></span>  <?php   } ?></p>
-                      <p>Next Followup:<?php if($log->next_followup!="0000-00-00 00:00:00"){ ?><?php echo date("d-M-Y h:i a",strtotime($log->next_followup));  ?><?php } ?> </p>
-                      <p>Remark:<?php echo $log->remark; ?> </p>
-               </div>
-              <?php } ?>
-               
+				<div class="tab-pane fade" id="schedule_tab" role="tabpanel">
+    <div class="employee-noti-content">
+
+        <!-- Show contact info at top -->
+<div class="contact-info d-flex justify-content-between align-items-center">
+    <!-- Left: Name -->
+    <span><strong><?php echo ucwords($data->contact_name); ?></strong></span>
+
+    <!-- Right: Call Icon -->
+    <a href="tel:<?php echo $data->mobile_no; ?>" class="call-btn d-flex align-items-center justify-content-center">
+        <i class="bi bi-telephone-fill"></i>
+    </a>
+</div>
+
+<style>
+.contact-info {
+    padding: 0.5rem 1rem;
+}
+
+.call-btn {
+    width: 30px;
+    height: 30px; /* make it square */
+    background-color: #ebebebff; /* dark blue */
+    color: #011C55;
+    border-radius: 50%; /* circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px; /* smaller icon */
+    transition: background 0.3s;
+}
+
+.call-btn:hover {
+    background-color: #0040a0; /* lighter blue on hover */
+    color: #fff;
+    text-decoration: none;
+}
+</style>
+
+
+        <div class="tracking-list">
+            <?php 
+            $logs = get_all_list('lead_status_log',' where lead_id='.$data->id.' order by id asc'); 
+            foreach($logs as $log):
+                $createdBy = get_row('users',' where id='.$log->created_by);
+                $status = $log->status == 0 ? 'Created' : get_row('master_table',' where id='.$log->status)->name;
+            ?>
+            <div class="tracking-item d-flex align-items-start mb-3">
+
+                <!-- Left: Date & Time -->
+                <div class="tracking-date text-end me-3" style="min-width: 100px;">
+                    <div><?php echo date('d M Y', strtotime($log->created_at)); ?></div>
+                    <span><?php echo date('h:i a', strtotime($log->created_at)); ?></span>
+                </div>
+
+                <!-- Middle: Icon -->
+            <div class="tracking-icon text-center me-3" style="width: 40px;">
+    <i class="bi bi-clock-history text-dark" style="font-size: 24px;"></i>
+</div>
+
+                <!-- Right: Details -->
+                <div class="tracking-details flex-fill">
+                    <p><strong>User:</strong> <?php echo $createdBy->name; ?></p>
+                    <p><strong>Status:</strong> 
+                        <?php if($log->status == 0){ ?>
+                            <span class="text-success"><?php echo $status; ?></span>
+                        <?php } else { ?>
+                            <span class="text-info"><?php echo $status; ?></span>
+                        <?php } ?>
+                    </p>
+                    <p><strong>Next Followup:</strong> 
+                        <?php if($log->next_followup != "0000-00-00 00:00:00"){ ?>
+                            <?php echo date("d-M-Y h:i a", strtotime($log->next_followup)); ?>
+                        <?php } ?>
+                    </p>
+                    <p><strong>Remark:</strong> <?php echo $log->remark; ?></p>
+                </div>
+
             </div>
-						</div>
-					</div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
 				</div>
 			</div>
 		</div>
@@ -130,8 +221,21 @@
 			</div>
 
 		</div>
+<a href="#" class="floating-btn" onclick="openFeedbackModal()">
+    <i class="fa fa-plus"></i>
+</a>
 
+<script>
+function openFeedbackModal() {
+    // Show the Bootstrap feedback modal
+    var modal = new bootstrap.Modal(document.getElementById('feedbackForm'));
+    modal.show();
 
+    // Optionally, you can set a default lead ID or phone
+    document.getElementById('lead_id').value = ''; 
+    document.getElementById('modal_title').innerHTML = 'Add Feedback';
+}
+</script>
 
 		
 		
@@ -183,12 +287,14 @@
  background-color:#214977
 }
 .tracking-list {
- border:1px solid #e5e5e5
+
+	background-color:#f5f4f4 ;
+ border:1px solid #f8f8f8ff
 }
 .tracking-item {
  border-left:1px solid #e5e5e5;
  position:relative;
- padding:2rem 1.5rem .5rem 2.5rem;
+ padding:8px;
  font-size:12px;
  margin-left:3rem;
  min-height:5rem
@@ -273,6 +379,73 @@
 }
 p{ margin-bottom:0px!important;}
 		</style>
+		<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackForm" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="<?php echo base_url(); ?>Leads/feedbackForm" method="post">
+                <input type="hidden" name="lead_id" id="lead_id">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <?php 
+                $user = $this->session->userdata('user_info');
+                $user_id = $user->id;
+                $role_id = $user->role;
+                $parent_id = $user_id;
+                if(!in_array($role_id,[1,2])){
+                    $userRow = $this->db->select('parent_id')->from('users')->where('id',$user_id)->get()->row();
+                    if($userRow) $parent_id = $userRow->parent_id;
+                }
+                ?>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Priority</label>
+                        <select class="form-select" name="priority_id" required>
+                            <option value="">-- Select Priority --</option>
+                            <?php 
+                            $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
+                            foreach($result as $row){ ?>
+                                <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select class="form-select" name="status_id" required>
+                            <option value="">-- Select Status --</option>
+                            <?php 
+                            $result = get_all_list('master_table', " WHERE type='status' AND parent_id = $parent_id"); 
+                            foreach($result as $row){ ?>
+                                <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Next Meeting Date & Time</label>
+                        <input type="datetime-local" name="next_followup" class="form-control" placeholder="Select date and time">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Remark</label>
+                        <textarea class="form-control" name="remark" placeholder="Enter remark" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 	</body>
 
 

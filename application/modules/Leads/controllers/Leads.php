@@ -380,42 +380,55 @@ public function uploads_file($path,$fileName)
         $data['heading']="CSV Preview";
         $this->load->view('csv_preview',$data);
       }
-      public function approve_csv()
-      {
-         $id=$this->input->post('id');
-         $csv=get_row('csv_uploads',' where id='.$id);
-        $arrayFromCSV =  array_map('str_getcsv', file($csv->file_name));
-        foreach($arrayFromCSV as $key=> $row)
-         {
-           if($key>0)
-           {
-             $data=array(
-                  'contact_name'=>$row[0],
-                  'mobile_no'=>$row[2],
-                  'email'=>$row[1],
-                  'owner_name'=>$row[0],
-                  'address'=>$row[3],
-                  'description'=>$row[4],
-                  'remark'=>'Fresh Lead',
-                  'parent_id'=>$this->session->userdata('user_info')->id,
-                  'assign_to'=>$this->session->userdata('site_userid'),
-                  'created_by'=>$this->session->userdata('site_userid'),
-                  );
-                   
-              $lead_id= $this->Common_Model->insert('leads',$data); 
-              $data2=array(
-                      'lead_id'=>$lead_id,
-                      'created_by'=>$this->session->userdata('site_userid'),
-                      'remark'=>'Fresh Lead',
-                      'date_created'=>date("Y-m-d")
-                      
-                          );
-                $this->Common_Model->insert('lead_status_log',$data2);   
-           }
-         }
-         $this->Common_Model->update('csv_uploads',array('status'=>1),array('id'=>1));
+     public function approve_csv()
+{
+    $id = $this->input->post('id');
+    $csv = get_row('csv_uploads', ' where id=' . $id);
+    
+    $arrayFromCSV = array_map('str_getcsv', file($csv->file_name));
 
-      }
+    foreach ($arrayFromCSV as $key => $row) {
+        if ($key > 0) {
+
+            // Clean mobile number (remove non-digits)
+            $mobile_no = preg_replace('/\D/', '', $row[2]);
+
+            // Validate mobile number (must be exactly 10 digits)
+            if (strlen($mobile_no) != 10) {
+                // Skip this row or log error
+                continue; // skip invalid mobile numbers
+            }
+
+            $data = array(
+                'contact_name' => $row[0],
+                'mobile_no'    => $mobile_no,
+                'email'        => $row[1],
+                'owner_name'   => $row[0],
+                'address'      => $row[3],
+                'description'  => $row[4],
+                'source'       => $row[5],
+                'remark'       => 'Fresh Lead',
+                'parent_id'    => $this->session->userdata('user_info')->id,
+                'assign_to'    => $this->session->userdata('site_userid'),
+                'created_by'   => $this->session->userdata('site_userid'),
+            );
+
+            $lead_id = $this->Common_Model->insert('leads', $data);
+
+            $data2 = array(
+                'lead_id'    => $lead_id,
+                'created_by' => $this->session->userdata('site_userid'),
+                'remark'     => 'Fresh Lead',
+                'date_created'=> date("Y-m-d")
+            );
+            $this->Common_Model->insert('lead_status_log', $data2);
+        }
+    }
+
+    // Mark CSV as approved
+    $this->Common_Model->update('csv_uploads', array('status' => 1), array('id' => $id));
+}
+
   
 
       public function leadsAssign()

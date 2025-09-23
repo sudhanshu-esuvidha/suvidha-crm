@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 <?php $this->load->view('Template/head'); ?>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <body>
     <?php
@@ -53,8 +55,16 @@ elseif (!empty($logged_in_user->access)) {
                             </div>
 <!-- Status Filter -->
 <form method="get" action="<?= base_url('Task'); ?>" class="row g-2 mb-3">
+    <!-- Task Title Search -->
+    <div class="col-12 col-md-4">
+        <input type="text" name="title_search" class="form-control" 
+               placeholder="Search Task Title..." 
+               value="<?= htmlspecialchars($title_search ?? '', ENT_QUOTES); ?>">
+    </div>
+
+    <!-- Status Filter -->
     <div class="col-8 col-md-3">
-        <select name="status_filter" class="form-control" onchange="this.form.submit()">
+        <select name="status_filter" class="form-control">
             <option value="">All (Active Default)</option>
             <?php foreach ($status_options as $status): ?>
                 <option value="<?= $status['id']; ?>" 
@@ -64,6 +74,8 @@ elseif (!empty($logged_in_user->access)) {
             <?php endforeach; ?>
         </select>
     </div>
+
+    <!-- Filter Button -->
     <div class="col-4 col-md-2">
         <button type="submit" class="btn btn-info w-100">
             <i class="fas fa-filter"></i>
@@ -71,6 +83,7 @@ elseif (!empty($logged_in_user->access)) {
         </button>
     </div>
 </form>
+
 
 
                             <!-- Success message -->
@@ -185,89 +198,100 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 
                 // Observer display
                 $observers = !empty($task['observer']) ? explode(',', $task['observer']) : [];
-                if (in_array($user->id, $observers)) {
-                    $observerDisplay = "<span class='badge bg-info text-dark'>Observer</span>";
-                } else {
-                    $observerDisplay = !empty($task['observer']) ? $task['observer'] : '';
+                $observerDisplay = in_array($user->id, $observers) 
+                    ? "<span class='badge bg-info text-dark'>Observer</span>" 
+                    : (!empty($task['observer']) ? $task['observer'] : '');
+
+                // Status Badge
+                $status = strtolower($task['status_name'] ?? 'active');
+                switch($status) {
+                    case 'active': $badgeClass = 'bg-success'; break;
+                    case 'pending': $badgeClass = 'bg-warning text-dark'; break;
+                    case 'completed': $badgeClass = 'bg-primary'; break;
+                    case 'cancelled': $badgeClass = 'bg-danger'; break;
+                    default: $badgeClass = 'bg-secondary'; break;
                 }
+
+                $isObserver = in_array($user->id, $observers);
+                $changedBy = !empty($task['status_changed_by']) 
+                             ? ($this->db->get_where('users', ['id' => $task['status_changed_by']])->row()->name ?? '') 
+                             : '';
+
+                // Short remark for "see more"
+                $remark = $task['remark'] ?? '';
+                $shortRemark = (strlen($remark) > 35) ? substr($remark, 0, 35).'...' : $remark;
             ?>
-         <div class="col-12">
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            <h5 class="card-title"><?= $task['title']; ?></h5>
-            <p class="mb-1"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
-            <p class="mb-1"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
+            <div class="col-12">
+                <div class="d-flex shadow-sm mb-3 rounded-3 overflow-hidden">
 
-            <!-- Show Observer only if not empty -->
-            <?php if (!empty($observerDisplay)): ?>
-                <p class="mb-1"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
-            <?php endif; ?>
+                    <!-- Left Date Panel -->
+                    <div class="bg-primary text-white d-flex flex-column justify-content-center align-items-center px-2" style="min-width:90px;">
+                        <small><?= date('d M Y', strtotime($task['created_at'])); ?></small>
+                        <small><?= date('h:i a', strtotime($task['created_at'])); ?></small>
+                    </div>
 
-            <p class="mb-1"><strong>Priority:</strong> <?= $task['priority']; ?></p>
-            <p class="mb-1"><strong>Start Date:</strong> <?= $task['start_date']; ?></p>
-            <p class="mb-1"><strong>End Date:</strong> <?= $task['end_date']; ?></p>
+                    <!-- Right Content -->
+                    <div class="card flex-grow-1 border-0 rounded-0">
+                        <div class="card-body p-2">
 
-            <?php
-            // Determine if current user is an observer
-            $observers = !empty($task['observer']) ? explode(',', $task['observer']) : [];
-            $isObserver = in_array($user->id, $observers);
+                            <!-- Title + Edit -->
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold mb-0"><?= $task['title']; ?></h6>
+                                <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
+                                    <button class="btn btn-sm btn-light" onclick="editTask(<?= $task['id']; ?>)">
+                                        <i class="fas fa-edit text-primary"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
 
-            // Determine badge class based on status
-            $status = strtolower($task['status_name'] ?? 'active');
-            switch($status) {
-                case 'active': $badgeClass = 'bg-success'; break;
-                case 'pending': $badgeClass = 'bg-warning text-dark'; break;
-                case 'completed': $badgeClass = 'bg-primary'; break;
-                case 'cancelled': $badgeClass = 'bg-danger'; break;
-                default: $badgeClass = 'bg-secondary'; break;
-            }
+                            <p class="mb-1 small"><strong>Lead:</strong> <?= $task['lead_name']; ?></p>
+                            <p class="mb-1 small"><strong>Assigned To:</strong> <?= $assignedToDisplay; ?></p>
+                            <?php if (!empty($observerDisplay)): ?>
+                                <p class="mb-1 small"><strong>Observer:</strong> <?= $observerDisplay; ?></p>
+                            <?php endif; ?>
+                            <p class="mb-1 small"><strong>Priority:</strong> <?= $task['priority']; ?></p>
+                            <p class="mb-1 small"><strong>Start → End:</strong> <?= $task['start_date']; ?> → <?= $task['end_date']; ?></p>
 
-            // Get username of who changed status
-            $changedBy = !empty($task['status_changed_by']) 
-                         ? ($this->db->get_where('users', ['id' => $task['status_changed_by']])->row()->username ?? '') 
-                         : '';
-            ?>
+                            <p class="mb-1 small">
+                                <strong>Status:</strong> 
+                                <span class="badge <?= $badgeClass; ?> px-3 py-1" 
+                                      style="cursor:<?= $isObserver ? 'not-allowed' : 'pointer'; ?>; background-color: rgb(1 28 85) !important;"
+                                      <?= $isObserver ? '' : "onclick=\"changeStatus({$task['id']})\""; ?>>
+                                    <?= ucfirst($task['status_name'] ?? 'Active'); ?>
+                                    <?php if($isObserver): ?><small class="text-muted">(Observer)</small><?php endif; ?>
+                                </span>
+                            </p>
 
-            <p class="mb-1">
-                <strong>Status:</strong> 
-                <span class="badge <?= $badgeClass; ?> px-3 py-2" 
-                      style="cursor:<?= $isObserver ? 'not-allowed' : 'pointer'; ?>;"
-                      <?= $isObserver ? '' : "onclick=\"changeStatus({$task['id']})\""; ?>>
-                    <?= ucfirst($task['status_name'] ?? 'Active'); ?>
-                    <?php if($isObserver): ?>
-                        <small class="text-muted">(Observer)</small>
-                    <?php endif; ?>
-                </span>
-            </p>
+                            <?php if(!empty($changedBy)): ?>
+                                <p class="mb-1 small"><strong>Changed By:</strong> <?= $changedBy; ?></p>
+                            <?php endif; ?>
 
-            <?php if(!empty($changedBy) || !empty($task['remark'])): ?>
-                <p class="mb-1"><strong>Changed By:</strong> <?= $changedBy; ?></p>
-                <p class="mb-1"><strong>Remark:</strong> <?= $task['remark'] ?? ''; ?></p>
-            <?php endif; ?>
+                            <!-- Remark with See More -->
+                            <?php if(!empty($remark)): ?>
+                                <p class="mb-1 small">
+                                    <i class="fas fa-sticky-note me-1 text-muted"></i>
+                                    <?= $shortRemark ?>
+                                    <?php if(strlen($remark) > 35): ?>
+                                        <a href="javascript:void(0)" onclick="showRemarkModal('<?= htmlspecialchars($remark, ENT_QUOTES); ?>')" style="color: #009efb;">see more</a>
+                                    <?php endif; ?>
+                                </p>
+                            <?php endif; ?>
 
-            <div class="mt-3 d-flex justify-content-between">
-                <?php if ($logged_in_user->parent_id == 1 || in_array('2', $access_array)): ?>
-                    <!-- Edit Button -->
-                    <button style="color: black;" class="btn btn-sm btn-warning"
-                        onclick="editTask(<?= $task['id']; ?>)">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                <?php endif; ?>
+                            <!-- Delete Button -->
+                            <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                                <div class="d-flex justify-content-end">
+                                    <a href="<?= base_url('Task/delete/' . $task['id']); ?>"
+                                       class="btn btn-sm btn-danger rounded-circle"
+                                       onclick="return confirm('Are you sure you want to delete this task?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
 
-                <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-                    <!-- Delete Button -->
-                    <a style="color: white;" 
-                       href="<?= base_url('Task/delete/' . $task['id']); ?>"
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('Are you sure you want to delete this task?')">
-                        <i class="fas fa-trash"></i> Delete
-                    </a>
-                <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-
         <?php endforeach; ?>
     <?php else: ?>
         <div class="col-12">
@@ -275,6 +299,29 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Full Remark Modal -->
+<div class="modal fade" id="remarkModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h6 class="modal-title">Task Remark</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="remarkText" class="small text-dark"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showRemarkModal(text) {
+    document.getElementById('remarkText').innerText = text;
+    var modal = new bootstrap.Modal(document.getElementById('remarkModal'));
+    modal.show();
+}
+</script>
 
 
                             </div>
@@ -344,79 +391,103 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     <div class="modal fade" id="addTaskModal" tabindex="-1">
         <div class="modal-dialog modal-lg"> <!-- wider modal -->
             <div class="modal-content">
-                <form action="<?= base_url('Task/add'); ?>" method="post">
-                    <!--  <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fas fa-tasks"></i> Add Task</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div> -->
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Title</label>
-                                <input type="text" name="title" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Lead</label>
-                                <select name="lead_id" class="form-control" required>
-                                    <option value="">Select Lead</option>
-                                    <?php foreach ($leads as $lead): ?>
-                                        <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
-                                    <?php endforeach; ?>
+            <form action="<?= base_url('Task/add'); ?>" method="post">
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" style="color:white;"><i class="fas fa-tasks text" ></i> Add Task</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row g-2">
+            <!-- Title -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control form-control-sm" placeholder="Enter task title" required>
+            </div>
 
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Start Date</label>
-                                <input type="datetime-local" name="start_date" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">End Date</label>
-                                <input type="datetime-local" name="end_date" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Assign To</label>
-                                <select name="assigned_to" class="form-control" required>
-                                    <option value="">Select User</option>
-                                    <?php foreach ($users as $user): ?>
-                                        <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Observer</label>
-                                <select name="observer" class="form-control">
-                                    <option value="">Select Observer</option>
-                                    <?php foreach ($users as $user): ?>
-                                        <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Priority</label>
-                                <select name="priority" class="form-control" required>
-                                    <option value="">Select Priority</option>
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12 d-flex align-items-center">
-                                <div class="form-check mt-4">
-                                    <input type="checkbox" class="form-check-input" name="active" id="activeTask" value="1">
-                                    <label class="form-check-label" for="activeTask">Active Task</label>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Description</label>
-                                <textarea name="description" class="form-control" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Task</button>
-                    </div>
-                </form>
+            <!-- Lead -->
+         <div class="col-md-6 col-12">
+    <label class="form-label">Lead</label>
+    <select name="lead_id" class="form-control form-control-sm select2" required>
+        <option value="">Select Lead</option>
+        <?php foreach ($leads as $lead): ?>
+            <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+            <!-- Start Date -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Start Date</label>
+                <input type="datetime-local" name="start_date" class="form-control form-control-sm" required>
+            </div>
+
+            <!-- End Date -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">End Date</label>
+                <input type="datetime-local" name="end_date" class="form-control form-control-sm" required>
+            </div>
+
+            <!-- Assign To -->
+          <!-- Assign To -->
+<div class="col-md-6 col-12">
+    <label class="form-label">Assign To</label>
+    <select name="assigned_to" class="form-control form-control-sm select2" required>
+        <option value="">Select User</option>
+        <?php foreach ($users as $u): ?>
+            <option value="<?= $u['id']; ?>"> <?= $u['name'] ?> (<?= $u['role_name'] ?>)</option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+<!-- Observer -->
+<div class="col-md-6 col-12">
+    <label class="form-label">Observer</label>
+    <select name="observer" class="form-control form-control-sm select2">
+        <option value="">Select Observer</option>
+        <?php foreach ($users as $u): ?>
+            <option value="<?= $u['id']; ?>"> <?= $u['name'] ?> (<?= $u['role_name'] ?>)</option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+
+            <!-- Priority -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-control form-control-sm" required>
+                    <option value="">Select Priority</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <!-- Active Checkbox -->
+            <div class="col-md-6 col-12 d-flex align-items-center">
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" name="active" id="activeTask" value="1">
+                    <label class="form-check-label" for="activeTask">Active Task</label>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control form-control-sm" rows="3" placeholder="Enter task description"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Close
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fas fa-save"></i> Save Task
+        </button>
+    </div>
+</form>
+
             </div>
         </div>
     </div>
@@ -427,86 +498,127 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     <div class="modal fade" id="editTaskModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form action="<?= base_url('Task/update'); ?>" method="post">
-                    <!--    <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Task</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div> -->
-                    <div class="modal-body">
-                        <input type="hidden" name="id" id="edit_id">
-                        <div class="row g-3">
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Title</label>
-                                <input type="text" name="title" id="edit_title" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Lead</label>
-                                <select name="lead_id" id="edit_lead" class="form-control" required>
-                                    <option value="">Select Lead</option>
-                                    <?php foreach ($leads as $lead): ?>
-                                        <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Start Date</label>
-                                <input type="datetime-local" name="start_date" id="edit_start_date" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">End Date</label>
-                                <input type="datetime-local" name="end_date" id="edit_end_date" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Assign To</label>
-                                <select name="assigned_to" id="edit_assigned_to" class="form-control" required>
-                                    <option value="">Select User</option>
-                                    <?php foreach ($users as $user): ?>
-                                        <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Observer</label>
-                                <select name="observer" id="edit_observer" class="form-control">
-                                    <option value="">Select Observer</option>
-                                    <?php foreach ($users as $user): ?>
-                                        <option value="<?= $user['id']; ?>"><?= $user['username']; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label">Priority</label>
-                                <select name="priority" id="edit_priority" class="form-control" required>
-                                    <option value="">Select Priority</option>
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 col-12 d-flex align-items-center">
-                                <div class="form-check mt-4">
-                                    <input type="checkbox" class="form-check-input" name="active" id="edit_active" value="1">
-                                    <label class="form-check-label" for="edit_active">Active Task</label>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Description</label>
-                                <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Update Task
-                        </button>
-                    </div>
-                </form>
+               <form action="<?= base_url('Task/update'); ?>" method="post">
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Task</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <input type="hidden" name="id" id="edit_id">
+        <div class="row g-2">
+            <!-- Title -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" id="edit_title" class="form-control form-control-sm" placeholder="Enter task title" required>
+            </div>
+
+            <!-- Lead -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Lead</label>
+                <select name="lead_id" id="edit_lead" class="form-control form-control-sm select2" required>
+                    <option value="">Select Lead</option>
+                    <?php foreach ($leads as $lead): ?>
+                        <option value="<?= $lead['id']; ?>"><?= $lead['contact_name']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Start Date -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Start Date</label>
+                <input type="datetime-local" name="start_date" id="edit_start_date" class="form-control form-control-sm" required>
+            </div>
+
+            <!-- End Date -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">End Date</label>
+                <input type="datetime-local" name="end_date" id="edit_end_date" class="form-control form-control-sm" required>
+            </div>
+
+            <!-- Assign To -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Assign To</label>
+                <select name="assigned_to" id="edit_assigned_to" class="form-control form-control-sm select2" required>
+                    <option value="">Select User</option>
+                    <?php foreach ($users as $u): ?>
+                        <option value="<?= $u['id']; ?>"><?= $u['name'] ?> (<?= $u['role_name'] ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Observer -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Observer</label>
+                <select name="observer" id="edit_observer" class="form-control form-control-sm select2">
+                    <option value="">Select Observer</option>
+                    <?php foreach ($users as $u): ?>
+                        <option value="<?= $u['id']; ?>"><?= $u['name'] ?> (<?= $u['role_name'] ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Priority -->
+            <div class="col-md-6 col-12">
+                <label class="form-label">Priority</label>
+                <select name="priority" id="edit_priority" class="form-control form-control-sm" required>
+                    <option value="">Select Priority</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <!-- Active Checkbox -->
+            <div class="col-md-6 col-12 d-flex align-items-center">
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" name="active" id="edit_active" value="1">
+                    <label class="form-check-label" for="edit_active">Active Task</label>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea name="description" id="edit_description" class="form-control form-control-sm" rows="3" placeholder="Enter task description"></textarea>
             </div>
         </div>
     </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Close
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fas fa-save"></i> Update Task
+        </button>
+    </div>
+</form>
+
+<!-- Initialize Select2 for Edit Form -->
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+$(document).ready(function() {
+    $('#edit_lead, #edit_assigned_to, #edit_observer').select2({
+        placeholder: "Select an option",
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+    <script>
+$(document).ready(function() {
+    $('.select2').select2({
+        placeholder: "Select Lead",
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
 <script>
 function changeStatus(taskId) {
     document.getElementById('status_task_id').value = taskId;

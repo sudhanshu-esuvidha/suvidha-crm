@@ -81,7 +81,12 @@ class Dashboard extends MY_Controller
         ->where('DATE(next_followup)', $tomorrow)
         ->count_all_results('leads');
 
-  
+$this->db->select('source, COUNT(*) as lead_count');
+$this->db->where('assign_to', $user_id);
+$this->db->group_by('source');
+$query = $this->db->get('leads');
+
+$data['lead_sources'] = $query->result_array();
 
     // ------------------ Statuses ------------------
     $master_parent_id = ($role == 1 || $role == 2) ? $user_id : $parent_id;

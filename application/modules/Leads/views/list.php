@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 <?php $this->load->view('Template/head',$data); ?>
+<!-- Bootstrap Icons CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <body>
 	<?php  $date=date("Y-m-d");
@@ -169,7 +175,11 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                         <div class="employee-notification-content" style="font-size: 15px;">
                             <h6 style="font-size: 16px; font-weight: 600;">
                                 <input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>" style="transform: scale(1.2); margin-right: 5px;"> 
-                                <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $row->mobile_no; ?>)">
+                                <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(
+    <?php echo $row->id; ?>,
+    '<?php echo $row->mobile_no; ?>',
+    '<?php echo addslashes($row->contact_name); ?>'
+)">
                                     <?php echo ucwords($row->contact_name); ?>
                                      <span class="badge bg-primary pull-right">
                                                         <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
@@ -361,12 +371,21 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 				$("#assignLeadModal").modal('show');
 				
 			}
-			function feedback_form(lead_id,mobile_no)
-			{
-				$("#lead_id").val(lead_id);
-				$("#modal_title").html(mobile_no);
-				$("#feedbackForm").modal('show');
-			}
+	function feedback_form(lead_id, mobile_no, contact_name) {
+    // Set hidden input
+    $("#lead_id").val(lead_id);
+
+    // Set modal fields
+    $("#lead_mobile").text(mobile_no);
+    $("#lead_company").text(contact_name);
+
+    // Update modal header with blue tick + number and name
+    $("#lead_info").html(`<i class="bi bi-check-circle-fill text-primary"></i> ${mobile_no} - ${contact_name}`);
+
+    // Show modal
+    $("#feedbackForm").modal('show');
+}
+
 			function filter_by()
 			{
 				var assign_to=$("#assign_to").val();
@@ -429,10 +448,14 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 				<div class="modal-content ">
 					<form action="<?php echo base_url(); ?>Leads/feedbackForm" method="post">
 						<input type="hidden" name="lead_id" id="lead_id">
-						<div class="modal-header">
-							<h5 class="modal-title"  id="modal_title"></h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
+			<div class="modal-header">
+    <h5 class="modal-title" id="modal_title">
+       
+        <span id="lead_info"></span> <!-- dynamically updated -->
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
 						<?php 
 // Get logged-in user info
 $user = $this->session->userdata('user_info');
@@ -456,12 +479,11 @@ if(!in_array($role_id, [1,2])){
 ?>
 
 <div class="modal-body">
-    <div class="form-group row mb-3">
-        <div class="col-md-8">
-            <label>Priority</label>
-            <select class="form-control" name="priority_id" required>
-
-                <option value="">--select priority--</option>
+    <form>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Priority</label>
+            <select class="form-select" name="priority_id" required>
+                <option value="">-- Select Priority --</option>
                 <?php 
                 $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
                 foreach($result as $row){ ?>
@@ -469,13 +491,11 @@ if(!in_array($role_id, [1,2])){
                 <?php } ?>
             </select>
         </div>
-    </div>
 
-    <div class="form-group row mb-3">
-        <div class="col-md-8">
-            <label>Status</label>
-            <select class="form-control" name="status_id" required>
-                <option value="">--select status--</option>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Status</label>
+            <select class="form-select" name="status_id" required>
+                <option value="">-- Select Status --</option>
                 <?php 
                 $result = get_all_list('master_table', " WHERE type='status' AND parent_id = $parent_id"); 
                 foreach($result as $row){ ?>
@@ -483,22 +503,20 @@ if(!in_array($role_id, [1,2])){
                 <?php } ?>
             </select>
         </div>
-    </div>
 
-    <div class="form-group row mb-3">
-        <div class="col-md-8">
-            <label>Next Meeting Date Time</label>
-            <input placeholder="Next Meeting Date Time" type="datetime-local" name="next_followup" class="form-control">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Next Meeting Date & Time</label>
+            <input type="datetime-local" name="next_followup" class="form-control" placeholder="Select date and time">
         </div>
-    </div>							
 
-    <div class="form-group row mb-3">
-        <div class="col-md-8">
-            <label>Remark</label>
-            <textarea placeholder="Remark" class="form-control" name="remark"></textarea>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Remark</label>
+            <textarea class="form-control" name="remark" placeholder="Enter remark" rows="3"></textarea>
         </div>
-    </div>
+    </form>
 </div>
+
+
 
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -509,6 +527,31 @@ if(!in_array($role_id, [1,2])){
 			</div>
 		</div>
 
+<style>
+    /* Optional custom styling for modern look */
+    .modal-body .form-label {
+        font-size: 0.95rem;
+        color: #495057;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        border-radius: 8px;
+        padding: 10px 12px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        transition: 0.3s;
+    }
+
+    .modal-body .form-control:focus,
+    .modal-body .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+    }
+
+    .modal-body textarea.form-control {
+        resize: none;
+    }
+</style>
 		<!-- Modal -->
 		<div class="modal fade" id="assignLeadModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered">

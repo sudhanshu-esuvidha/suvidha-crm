@@ -53,18 +53,20 @@ public function change_status()
     // Task List
 public function index()
 {
-    $user     = $this->session->userdata('user_info');
-    $user_id  = $user->id;
-    $role_id  = $user->role ?? 0;
+    $user      = $this->session->userdata('user_info');
+    $user_id   = $user->id;
+    $role_id   = $user->role ?? 0;
     $parent_id = in_array($role_id, [1, 2]) ? $user_id : $user->parent_id;
 
     $status_filter = $this->input->get('status_filter');
+    $title_search  = $this->input->get('title_search');
 
     $this->db->select('t.*, l.contact_name as lead_name, u.username as assigned_name');
     $this->db->from('tasks t');
     $this->db->join('leads l', 'l.id = t.lead_id', 'left');
     $this->db->join('users u', 'u.id = t.assigned_to', 'left');
 
+    // Access control
     if ($role_id == 1) {
         $this->db->where('t.parent_id', $user_id);
     } else {
@@ -82,6 +84,11 @@ public function index()
         $this->db->where('t.active', 1); // default active tasks
     }
 
+    // Filter by task title if search is provided
+    if (!empty($title_search)) {
+        $this->db->like('t.title', $title_search);
+    }
+
     $tasks = $this->db->get()->result_array();
 
     // Fetch leads, users, observers, status options
@@ -90,10 +97,14 @@ public function index()
         ->where('parent_id', $parent_id)
         ->get()->result_array();
 
-    $users = $this->db->select('id, username')
-        ->from('users')
-        ->where('parent_id', $parent_id)
-        ->get()->result_array();
+  $users = $this->db
+    ->select('u.id, u.username, u.name, m.name as role_name')
+    ->from('users u')
+    ->join('master_table m', 'm.id = u.role AND m.type = "role"', 'left')
+    ->where('u.parent_id', $parent_id)
+    ->get()
+    ->result_array();
+
 
     $observers = $this->db->select('id, username')
         ->from('users')
@@ -113,11 +124,13 @@ public function index()
         'users'          => $users,
         'observers'      => $observers,
         'status_options' => $status_options,
-        'status_filter'  => $status_filter
+        'status_filter'  => $status_filter,
+        'title_search'   => $title_search, // pass search value to view
     ];
 
     $this->load->view('task_list', $data);
 }
+
 
 
 
