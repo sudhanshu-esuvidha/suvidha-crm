@@ -30,6 +30,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                 <i class="la la-chart-line"></i> <span>Leads</span>
             </a>
         </li>
+                
     <?php endif; ?>
 
     <?php if (in_array('4', $access_array) || $logged_in_user->parent_id == 1): ?>
@@ -89,4 +90,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </ul>
         </li>
     <?php endif; ?>
+    <li>
+            <a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>
+        </li>
 </ul>

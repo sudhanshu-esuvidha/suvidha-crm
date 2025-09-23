@@ -65,8 +65,10 @@
 				<div class="dropdown mobile-user-menu">
 					<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></a>
 					<div class="dropdown-menu dropdown-menu-right">
-						<a class="dropdown-item" href="<?= base_url('profile'); ?>ComingSoon">My Profile</a>
-						<a class="dropdown-item" href="<?php echo base_url(); ?>ComingSoon">Change Password</a>
+						<?php if($user->role==1 || $user->role==2){ ?>
+							<a class="dropdown-item" href="<?= base_url('profile'); ?>">My Profile</a>
+							<?php } ?>
+					
 <a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>					</div>
 				</div>
 
