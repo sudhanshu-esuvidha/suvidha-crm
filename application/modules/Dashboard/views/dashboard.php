@@ -81,28 +81,51 @@
         </div>
     </a>
 </div>
-
 <div class="col-6 col-sm-6 col-md-6 position-relative">
-    <div class="dashboard-card bg-warning text-white position-relative p-3">
-        <!-- Professional Icon -->
-        <i class="bi bi-clock-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+    <a href="<?= base_url('Leads/list?filter=today_followup') ?>" class="text-decoration-none">
+        <div class="dashboard-card bg-warning text-white position-relative p-3">
+            <!-- Professional Icon -->
+            <i class="bi bi-clock-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
-        <!-- Number and label -->
-        <h3 style="color:white; margin-top: 30px;"><?= $today_followups; ?></h3>
-        <h6 class="mt-2" style="color:white;">Today's Follow-ups</h6>
-    </div>
+            <!-- Number and label -->
+            <h3 style="color:white; margin-top: 30px;"><?= $today_followups; ?></h3>
+            <h6 class="mt-2" style="color:white;">Today's Follow-ups</h6>
+        </div>
+    </a>
 </div>
 
-<div class="col-6 col-sm-6 col-md-6 position-relative">
-    <div class="dashboard-card bg-danger text-white position-relative p-3">
-        <!-- Professional Icon -->
-        <i class="bi bi-calendar-check-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
-        <!-- Number and label -->
-        <h3 style="color:white; margin-top: 30px;"><?= $tomorrow_followups; ?></h3>
-        <h6 class="mt-2" style="color:white;">Tomorrow's Follow-ups</h6>
-    </div>
+<div class="col-6 col-sm-6 col-md-6 position-relative">
+    <a href="<?= base_url('Leads/list?filter=tomorrow_followup') ?>" class="text-decoration-none">
+        <div class="dashboard-card bg-danger text-white position-relative p-3">
+            <!-- Professional Icon -->
+            <i class="bi bi-calendar-check-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
+
+            <!-- Number and label -->
+            <h3 style="color:white; margin-top: 30px;"><?= $tomorrow_followups; ?></h3>
+            <h6 class="mt-2" style="color:white;">Tomorrow's Follow-ups</h6>
+        </div>
+    </a>
 </div>
+
+<!-- Floating Pending Follow-up Button -->
+<button id="pendingFollowupBtn" class="btn btn-warning"
+        style="
+            position: fixed;
+            bottom: 90px; /* slightly above the dialer button */
+            right: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 9999;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        ">
+    <i class="bi bi-hourglass-split"></i>
+</button>
 
 
 
@@ -132,6 +155,7 @@
                             <h6>Leads Trend</h6>
                             <canvas id="leadsTrendChart"></canvas>
                         </div>
+                        
                     </div>
                 </div>
 <div class="col-12">
@@ -235,6 +259,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const pendingBtn = document.getElementById('pendingFollowupBtn');
+
+pendingBtn.addEventListener('click', () => {
+    // Redirect to Leads/list with filter for yesterday + status=0
+    window.location.href = "<?= base_url('Leads/list?filter=yesterday_pending') ?>";
+});
+</script>
 <script>
 const dialerBtn = document.getElementById('dialerBtn');
 const dialerOverlay = document.getElementById('dialerOverlay');

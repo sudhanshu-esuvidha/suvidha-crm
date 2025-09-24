@@ -165,6 +165,8 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
         <input type="text" id="lead_search" class="form-control" placeholder="Search by name or mobile number" style="width:80%;">
     </div>
 </div>
+
+
 <style>
 .custom-select {
     padding: 8px 12px;      /* Medium size */
@@ -184,6 +186,26 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 </style>
 
 <?php } ?>
+<div class="quick-filters d-flex gap-2 mb-3">
+  <a href="<?= base_url('Leads/list?filter=fresh') ?>" class="btn btn-success btn-sm">
+    <i class="fas fa-bolt"></i> Fresh
+</a>
+
+    <a href="<?= base_url('Leads/list?next_followup=1') ?>" class="btn btn-primary btn-sm">
+        <i class="fas fa-calendar-check"></i> Follow-up
+    </a>
+
+    <a href="<?= base_url('Leads/list') ?>" class="btn btn-secondary btn-sm">
+        <i class="fas fa-list"></i> All Leads
+    </a>
+</div>
+
+<style>
+.quick-filters {
+    display: flex !important;   /* force show */
+}
+</style>
+
 
 						<?php if($this->session->flashdata('success')){ ?>
 						<div class="col-md-12">
@@ -323,6 +345,13 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     font-size: 0.95rem;
 }
 </style>
+
+
+
+
+
+
+
 <div class="modal fade" id="addLeadModal" tabindex="-1" aria-labelledby="addLeadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -755,7 +784,8 @@ $result = get_all_list('users', ' WHERE parent_id = ' . $logged_in_user_id);
     </div>
 </div>
 
-
+<!-- Floating Fresh Leads Button -->
+<!-- Floating Fresh Leads Button -->
 
 <script>
 let deleteUrl = null;
@@ -813,7 +843,40 @@ function delete_selected() {
         }
     });
 }
+document.getElementById("freshLeadsBtn").addEventListener("click", function() {
+    // Filter table rows (desktop)
+    $("table tbody tr").each(function() {
+        const statusText = $(this).find("td:nth-child(7)").text().trim();
+        if(statusText.includes("Fresh Lead")) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
 
+    // Filter mobile cards (status badge)
+    $("#list-mobile li").each(function() {
+        const badgeText = $(this).find("span.badge").text().trim();
+        if(badgeText.includes("Fresh Lead")) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+});
+// Show only Fresh Leads
+$("#freshLeadsBtn").click(function(){
+    $(".lead-row").show().filter(function(){
+        return $(this).data("status") !== "Fresh";
+    }).hide();
+});
+
+// Show only Followup Leads
+$("#followupLeadsBtn").click(function(){
+    $(".lead-row").show().filter(function(){
+        return $(this).data("status") !== "Followup";
+    }).hide();
+});
 </script>
 
 
@@ -859,6 +922,103 @@ $(document).ready(function() {
 			.small{ font-size:10px; margin-left:10px;  }
 			
 		</style>
+        <a href="javascript:void(0);" id="freshLeadsBtn" class="floating-btn-fresh" title="Show Fresh Leads">
+
+    <span class="btn-text">Fresh</span>
+</a>
+
+<style>
+.floating-btn-fresh {
+    position: fixed;
+    bottom: 90px; /* above your existing add button */
+    right: 20px;
+    background: #55ce63;
+    color: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column; /* icon above text */
+    justify-content: center;
+    align-items: center;
+    font-size: 12px; /* small text */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    z-index: 9999;
+    cursor: pointer;
+    text-align: center;
+}
+
+.floating-btn-fresh:hover {
+    background: #55ce63;
+    color: #fff;
+    text-decoration: none;
+}
+
+.floating-btn-fresh .btn-text {
+    font-size: 10px; /* smaller text */
+    margin-top: 2px;  /* space between icon and text */
+    line-height: 1;
+}
+</style>
+
+<!-- Floating Followup Leads Button -->
+<a href="javascript:void(0);" id="followupLeadsBtn" class="floating-btn-followup" title="Show Followup Leads">
+ 
+    <span class="btn-text">Followup</span>
+</a>
+
+<style>
+.floating-btn-followup {
+    position: fixed;
+    bottom: 160px; /* above the Fresh Leads button */
+    right: 20px;
+    background: #007bff; /* blue */
+    color: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column; /* icon above text */
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    z-index: 9999;
+    cursor: pointer;
+    text-align: center;
+}
+
+.floating-btn-followup:hover {
+    background: #0056b3;
+    color: #fff;
+    text-decoration: none;
+}
+
+.floating-btn-followup .btn-text {
+    font-size: 10px;
+    margin-top: 2px;
+    line-height: 1;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    $("#followupLeadsBtn").on("click", function() {
+        // ✅ Desktop Table
+        $("table tbody tr").filter(function() {
+            var nextFollowup = $(this).find("td:nth-child(9)").text().trim();
+            $(this).toggle(nextFollowup !== "");
+        });
+
+        // ✅ Mobile Cards
+        $("#list-mobile li").filter(function() {
+            var nextFollowup = $(this).find("span:contains('Next Followup')").text().trim();
+            $(this).toggle(nextFollowup.indexOf("Next Followup:") !== -1 && nextFollowup.replace("Next Followup:","").trim() !== "");
+        });
+    });
+});
+</script>
+
 	</body>
 
 

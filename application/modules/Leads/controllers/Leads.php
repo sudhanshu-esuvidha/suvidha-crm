@@ -43,7 +43,32 @@ public function list()
         // Regular user: show only leads assigned to them
         $where .= " AND assign_to = {$user_id}";
     }
-
+if (!empty($_GET['assign_to'])) {
+    $assign_to = intval($_GET['assign_to']);
+    $where .= " AND assign_to = {$assign_to}";
+}
+if (!empty($_GET['status'])) {
+    $status = intval($_GET['status']);
+    $where .= " AND status_id = {$status}";
+}
+if (!empty($_GET['next_followup']) && $_GET['next_followup'] == 1) {
+    $where .= " AND next_followup != '0000-00-00 00:00:00'";
+}
+if (!empty($_GET['filter']) && $_GET['filter'] == 'tomorrow_followup') {
+    $tomorrow = date('Y-m-d', strtotime('+1 day'));
+    $where .= " AND DATE(next_followup) = '{$tomorrow}'";
+}
+if (!empty($_GET['filter']) && $_GET['filter'] == 'today_followup') {
+    $today = date('Y-m-d');  // Current system date
+    $where .= " AND DATE(next_followup) = '{$today}'";
+}
+if (!empty($_GET['filter']) && $_GET['filter'] == 'fresh') {
+    $where .= " AND status = 0";
+}
+if (!empty($_GET['filter']) && $_GET['filter'] == 'yesterday_pending') {
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $where .= " AND DATE(created_at) = '{$yesterday}' AND status = 0";
+}
     // Optional GET filters
     if (!empty($_GET['assign_to'])) {
         $assign_to = intval($_GET['assign_to']);
