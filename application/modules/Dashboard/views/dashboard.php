@@ -175,49 +175,54 @@
          bottom: 0;
          left: 0;
          width: 100%;
-         background: #f8f9fa;
-         border-top-left-radius: 15px;
-         border-top-right-radius: 15px;
-         box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+         max-width: 400px;
+         margin: auto;
+         background: #fff;
+         border-top-left-radius: 20px;
+         border-top-right-radius: 20px;
+         box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
          padding: 20px;
          z-index: 10000;
-         transition: transform 0.3s ease;
+         font-family: 'Poppins', sans-serif;
      ">
-    
+
     <!-- Close Button -->
-    <div style="text-align: right;">
+    <div style="text-align: right; margin-bottom: 10px;">
         <button id="closeDialer" class="btn btn-light btn-sm">
             <i class="bi bi-x-lg"></i>
         </button>
     </div>
 
     <!-- Display Input -->
-    <input type="tel" id="dialNumberInput" 
-           class="form-control mb-3 text-center fs-4" 
-           placeholder="Enter Number" readonly
-           style="border-radius: 12px; padding: 15px; font-weight: 600;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <input type="tel" id="dialNumberInput" 
+               class="form-control fs-4 text-center" 
+               placeholder="Enter Number" readonly
+               style="border-radius: 12px; padding: 15px; font-weight: 600;">
+        <button id="backspaceBtn" class="btn btn-light ms-2 fs-4" style="width:60px;">⌫</button>
+    </div>
 
     <!-- Keypad -->
-    <div class="dialer-keypad d-grid gap-2">
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-light keypad-btn">1</button>
-            <button class="btn btn-light keypad-btn">2</button>
-            <button class="btn btn-light keypad-btn">3</button>
+    <div class="dialer-keypad">
+        <div class="d-flex justify-content-between mb-2">
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">1</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">2</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">3</button>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">4</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">5</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">6</button>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">7</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">8</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">9</button>
         </div>
         <div class="d-flex justify-content-between">
-            <button class="btn btn-light keypad-btn">4</button>
-            <button class="btn btn-light keypad-btn">5</button>
-            <button class="btn btn-light keypad-btn">6</button>
-        </div>
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-light keypad-btn">7</button>
-            <button class="btn btn-light keypad-btn">8</button>
-            <button class="btn btn-light keypad-btn">9</button>
-        </div>
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-light keypad-btn">*</button>
-            <button class="btn btn-light keypad-btn">0</button>
-            <button class="btn btn-light keypad-btn">#</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">*</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">0</button>
+            <button class="btn btn-light keypad-btn fs-4 flex-fill mx-1">#</button>
         </div>
     </div>
 
@@ -236,6 +241,7 @@ const dialerOverlay = document.getElementById('dialerOverlay');
 const closeDialer = document.getElementById('closeDialer');
 const callNumberBtn = document.getElementById('callNumberBtn');
 const dialInput = document.getElementById('dialNumberInput');
+const backspaceBtn = document.getElementById('backspaceBtn');
 
 // Show dialer
 dialerBtn.addEventListener('click', () => {
@@ -252,6 +258,11 @@ document.querySelectorAll('.keypad-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         dialInput.value += btn.textContent;
     });
+});
+
+// Backspace functionality
+backspaceBtn.addEventListener('click', () => {
+    dialInput.value = dialInput.value.slice(0, -1);
 });
 
 // Call number

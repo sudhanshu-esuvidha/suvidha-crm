@@ -59,7 +59,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     <!-- Upload CSV -->
     <?php if (in_array(9, $access_array) || $logged_in_user->parent_id == 1): ?>
         <span onclick="upload_csv()" class="custom-btn bg-success btn-sm">
-            <i class="fas fa-upload"></i> Upload CSV
+            <i class="fas fa-upload"></i>CSV
         </span>
     <?php endif; ?>
 
@@ -67,7 +67,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     <?php if (in_array(8, $access_array) || $logged_in_user->parent_id == 1): ?>
         <span class="custom-btn bg-danger btn-sm">
             <a download href="<?= base_url(); ?>lead_sample_csv.csv" class="text-white text-decoration-none">
-                <i class="fas fa-download"></i>  Sample
+                <i class="fas fa-download"></i>Sample
             </a>
         </span>
     <?php endif; ?>
@@ -75,7 +75,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     <!-- Assign To -->
     <?php if ($logged_in_user->parent_id == 1): ?>
         <span onclick="assign_to()" class="custom-btn bg-info btn-sm">
-            <i class="fas fa-users"></i> Assign To
+            <i class="fas fa-users"></i>Assign To
         </span>
     <?php endif; ?>
 
@@ -134,8 +134,8 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     $assign_to = $this->db->get_where('users', ['parent_id' => $logged_in_user_id])->result(); 
     ?>
    
-    <select onchange="filter_by()" id="assign_to" class="custom-select">
-        <option value="">--all employee--</option>
+    <select onchange="filter_by()" id="assign_to" class="custom-select"  style="width: 50%!important;">
+        <option value="" >--employee--</option>
         <?php foreach($assign_to as $userAssign){ ?>
             <option <?php if(isset($_GET['assign_to']) && $_GET['assign_to'] == $userAssign->id){ echo "selected"; } ?> 
                     value="<?= $userAssign->id; ?>">
@@ -149,8 +149,8 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
                    ->get_where('master_table', ['type' => 'status', 'parent_id' => $logged_in_user_id])
                    ->result(); 
     ?>
-    <select onchange="filter_by()" id="status" class="custom-select">
-        <option value="">--all status--</option>
+    <select onchange="filter_by()" id="status" class="custom-select" >
+        <option value="">--status--</option>
         <?php foreach($status as $rowStatus){ ?>
             <option <?php if(isset($_GET['status']) && $_GET['status'] == $rowStatus->id){ echo "selected"; } ?> 
                     value="<?= $rowStatus->id; ?>">
@@ -171,7 +171,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     font-size: 16px;        /* Medium text */
     border-radius: 6px;
     border: 1px solid #ccc;
-    min-width: 180px;       /* Minimum width */
+      /* Minimum width */
     cursor: pointer;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
