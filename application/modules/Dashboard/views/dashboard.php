@@ -145,10 +145,126 @@
         </div>
     </div>
 </div>
+<!-- Floating Dialer Button -->
+<!-- Floating Dialer Button -->
+<!-- Floating Dialer Button -->
+<button id="dialerBtn" class="btn btn-success"
+        style="
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 9999;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        ">
+    <i class="bi bi-telephone-fill"></i>
+</button>
+
+
+<!-- Dialer Form -->
+<div id="dialerOverlay" 
+     style="
+         display: none;
+         position: fixed;
+         bottom: 0;
+         left: 0;
+         width: 100%;
+         background: #f8f9fa;
+         border-top-left-radius: 15px;
+         border-top-right-radius: 15px;
+         box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+         padding: 20px;
+         z-index: 10000;
+         transition: transform 0.3s ease;
+     ">
+    
+    <!-- Close Button -->
+    <div style="text-align: right;">
+        <button id="closeDialer" class="btn btn-light btn-sm">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- Display Input -->
+    <input type="tel" id="dialNumberInput" 
+           class="form-control mb-3 text-center fs-4" 
+           placeholder="Enter Number" readonly
+           style="border-radius: 12px; padding: 15px; font-weight: 600;">
+
+    <!-- Keypad -->
+    <div class="dialer-keypad d-grid gap-2">
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-light keypad-btn">1</button>
+            <button class="btn btn-light keypad-btn">2</button>
+            <button class="btn btn-light keypad-btn">3</button>
+        </div>
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-light keypad-btn">4</button>
+            <button class="btn btn-light keypad-btn">5</button>
+            <button class="btn btn-light keypad-btn">6</button>
+        </div>
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-light keypad-btn">7</button>
+            <button class="btn btn-light keypad-btn">8</button>
+            <button class="btn btn-light keypad-btn">9</button>
+        </div>
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-light keypad-btn">*</button>
+            <button class="btn btn-light keypad-btn">0</button>
+            <button class="btn btn-light keypad-btn">#</button>
+        </div>
+    </div>
+
+    <!-- Call Button -->
+    <button id="callNumberBtn" class="btn btn-success w-100 mt-3 fs-5 py-2">
+        <i class="bi bi-telephone-fill"></i> Call
+    </button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const dialerBtn = document.getElementById('dialerBtn');
+const dialerOverlay = document.getElementById('dialerOverlay');
+const closeDialer = document.getElementById('closeDialer');
+const callNumberBtn = document.getElementById('callNumberBtn');
+const dialInput = document.getElementById('dialNumberInput');
+
+// Show dialer
+dialerBtn.addEventListener('click', () => {
+    dialerOverlay.style.display = "block";
+});
+
+// Close dialer
+closeDialer.addEventListener('click', () => {
+    dialerOverlay.style.display = "none";
+});
+
+// Keypad input
+document.querySelectorAll('.keypad-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        dialInput.value += btn.textContent;
+    });
+});
+
+// Call number
+callNumberBtn.addEventListener('click', () => {
+    const number = dialInput.value.trim();
+    if(number === "") {
+        alert("Please enter a phone number");
+        return;
+    }
+    window.location.href = `tel:${number}`;
+});
+</script>
+
 <script>
     // Convert PHP array into JS arrays
     const leadSources = <?= json_encode(array_column($lead_sources, 'source')); ?>;

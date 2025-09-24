@@ -7,7 +7,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <body>
 	<?php  $date=date("Y-m-d");
 	$date2=date('Y-m-d', strtotime($date.' + 1 day')); ?>
@@ -26,34 +29,71 @@ $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
 $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
 ?>
 
-<div class="col-md-12 d-flex gap-2">
+<div class="col-md-12 d-flex flex-wrap gap-2">
 
-    <!-- Upload CSV (Import) button -->
+    <?php if ($user->role == 1 || $user->role == 2): ?>
+        <span onclick="delete_selected()" class="custom-btn bg-danger btn-sm">
+            <i class="fas fa-trash"></i> Delete Selected
+        </span>
+    <?php endif; ?>
+
+    <div class="container mt-3">
+        <?php if (!empty($success)): ?>
+            <div class="alert alert-success">
+                <?= $success ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-warning">
+                <strong>Some rows were not imported:</strong>
+                <ul>
+                    <?php foreach ($errors as $err): ?>
+                        <li><?= $err ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Upload CSV -->
     <?php if (in_array(9, $access_array) || $logged_in_user->parent_id == 1): ?>
-        <span onclick="upload_csv()" class="custom-btn bg-success">
+        <span onclick="upload_csv()" class="custom-btn bg-success btn-sm">
             <i class="fas fa-upload"></i> Upload CSV
         </span>
     <?php endif; ?>
 
-    <!-- Download Sample (Export) button -->
+    <!-- Download Sample -->
     <?php if (in_array(8, $access_array) || $logged_in_user->parent_id == 1): ?>
-        <span class="custom-btn bg-danger">
-            <a download="" href="<?php echo base_url(); ?>lead_sample_csv.csv" class="text-white text-decoration-none">
-                <i class="fas fa-download"></i> Download Sample
+        <span class="custom-btn bg-danger btn-sm">
+            <a download href="<?= base_url(); ?>lead_sample_csv.csv" class="text-white text-decoration-none">
+                <i class="fas fa-download"></i>  Sample
             </a>
         </span>
     <?php endif; ?>
 
-    <!-- Assign To button -->
+    <!-- Assign To -->
     <?php if ($logged_in_user->parent_id == 1): ?>
-        <span onclick="assign_to()" class="custom-btn bg-info">
+        <span onclick="assign_to()" class="custom-btn bg-info btn-sm">
             <i class="fas fa-users"></i> Assign To
         </span>
     <?php endif; ?>
 
 </div>
 
+
 <style>
+    .custom-btn {
+    padding: 4px 10px;   /* smaller padding */
+    border-radius: 4px;
+    font-size: 13px;     /* smaller font */
+    cursor: pointer;
+    display: inline-block;
+}
+.custom-btn i {
+    font-size: 12px;     /* smaller icons */
+}
+
 .custom-btn {
     display: inline-flex;
     align-items: center;
@@ -93,7 +133,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     // Fetch users where parent_id = logged-in user's ID
     $assign_to = $this->db->get_where('users', ['parent_id' => $logged_in_user_id])->result(); 
     ?>
-    
+   
     <select onchange="filter_by()" id="assign_to" class="custom-select">
         <option value="">--all employee--</option>
         <?php foreach($assign_to as $userAssign){ ?>
@@ -120,7 +160,11 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     </select>
 
 </div>
-
+ <div class="row mt-2 mb-3">
+    <div class="col-md-4 ">
+        <input type="text" id="lead_search" class="form-control" placeholder="Search by name or mobile number" style="width:80%;">
+    </div>
+</div>
 <style>
 .custom-select {
     padding: 8px 12px;      /* Medium size */
@@ -244,10 +288,85 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
         </div>
     </div>
 </div>
+<!-- Floating Add Button -->
+<!-- Floating Add Button -->
+<a href="javascript:void(0);" class="floating-btn" data-bs-toggle="modal" data-bs-target="#addLeadModal">
+    <i class="fas fa-plus"></i>
+</a>
 
+<style>
+.floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #021c55;
+    color: #fff;
+    width: 55px;
+    height: 55px;
+    border:2px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    z-index: 9999;
+}
+.floating-btn:hover {
+    background: #218838;
+    text-decoration: none;
+    color: #fff;
+}
+.flatpickr-input {
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+}
+</style>
+<div class="modal fade" id="addLeadModal" tabindex="-1" aria-labelledby="addLeadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form action="<?= base_url('Leads/store') ?>" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addLeadModalLabel">Add New Lead</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Contact Name</label>
+            <input type="text" name="contact_name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mobile No</label>
+            <input type="text" name="mobile_no" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Source</label>
+            <input type="text" name="source" class="form-control">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Lead</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 
     <!-- ✅ Desktop View (Table) -->
+
     <div class="col-12 d-none d-md-block">
         <div class="table-responsive">
             <table class="table table-bordered">
@@ -478,50 +597,68 @@ if(!in_array($role_id, [1,2])){
 }
 ?>
 
+
 <div class="modal-body">
-    <form>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Priority</label>
-            <select class="form-select" name="priority_id" required>
-                <option value="">-- Select Priority --</option>
-                <?php 
-                $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
-                foreach($result as $row){ ?>
-                    <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
-                <?php } ?>
-            </select>
-        </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Priority</label>
+        <select class="form-select" name="priority_id" required>
+            <option value="">-- Select Priority --</option>
+            <?php 
+            $result = get_all_list('master_table', " WHERE type='priority' AND parent_id = $parent_id"); 
+            foreach($result as $row){ ?>
+                <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+            <?php } ?>
+        </select>
+    </div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">Status</label>
-            <select class="form-select" name="status_id" required>
-                <option value="">-- Select Status --</option>
-                <?php 
-                $result = get_all_list('master_table', " WHERE type='status' AND parent_id = $parent_id"); 
-                foreach($result as $row){ ?>
-                    <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
-                <?php } ?>
-            </select>
-        </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Status</label>
+        <select class="form-select" name="status_id" required>
+            <option value="">-- Select Status --</option>
+            <?php 
+            $result = get_all_list('master_table', " WHERE type='status' AND parent_id = $parent_id"); 
+            foreach($result as $row){ ?>
+                <option value="<?php echo $row->id; ?>"><?php echo $row->name; ?></option>
+            <?php } ?>
+        </select>
+    </div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">Next Meeting Date & Time</label>
-            <input type="datetime-local" name="next_followup" class="form-control" placeholder="Select date and time">
-        </div>
+  <div class="mb-3">
+    <label class="form-label fw-bold">Next Meeting Date & Time</label>
+    <input type="text" id="nextFollowup" name="next_followup" class="form-control" placeholder="Select date and time">
+</div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">Remark</label>
-            <textarea class="form-control" name="remark" placeholder="Enter remark" rows="3"></textarea>
-        </div>
-    </form>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Remark</label>
+        <textarea class="form-control" name="remark" placeholder="Enter remark" rows="3"></textarea>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
 </div>
 
 
+<script>
+flatpickr("#nextFollowup", {
+    enableTime: true,            // allow time selection
+    dateFormat: "Y-m-d H:i",     // format: 2025-09-24 14:30
+    minDate: "today",            // can't select past dates
+    time_24hr: true,             // 24-hour time format
+    weekNumbers: true,           // show week numbers
+    allowInput: true,            // allow typing manually
+    defaultHour: 9,              // default time
+    defaultMinute: 0,
+    wrap: false,
+    onReady: function(selectedDates, dateStr, instance) {
+        instance.calendarContainer.style.zIndex = 9999; // ensure it's above modal
+    }
+});
+</script>
 
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="submit" class="btn btn-primary">Submit</button>
-						</div>
+
+						
 					</form>
 				</div>
 			</div>
@@ -644,9 +781,63 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+function delete_selected() {
+    let lead_ids = [];
+
+    // Collect all checked rows
+    document.querySelectorAll(".lead_ids:checked").forEach(cb => {
+        lead_ids.push(cb.value);
+    });
+
+    if (lead_ids.length === 0) {
+        alert("⚠️ Please select at least one row to delete.");
+        return;
+    }
+
+    // Confirm before delete
+    if (!confirm("Are you sure you want to delete the selected leads?")) {
+        return;
+    }
+
+    // Send Ajax request
+    $.ajax({
+        url: "<?= base_url('Leads/delete_multiple') ?>",
+        type: "POST",
+        data: { ids: lead_ids },
+        success: function (response) {
+            alert("✅ Selected leads deleted successfully!");
+            location.reload(); // Refresh page
+        },
+        error: function () {
+            alert("❌ Something went wrong while deleting.");
+        }
+    });
+}
+
 </script>
 
 
+<script>
+$(document).ready(function() {
+    $("#lead_search").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+
+        // ✅ Desktop Table
+        $("table tbody tr").filter(function() {
+            $(this).toggle(
+                $(this).text().toLowerCase().indexOf(value) > -1
+            );
+        });
+
+        // ✅ Mobile Cards
+        $("#list-mobile li").filter(function() {
+            $(this).toggle(
+                $(this).text().toLowerCase().indexOf(value) > -1
+            );
+        });
+    });
+});
+</script>
 
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

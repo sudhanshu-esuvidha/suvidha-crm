@@ -380,33 +380,51 @@ public function uploads_file($path,$fileName)
         $data['heading']="CSV Preview";
         $this->load->view('csv_preview',$data);
       }
-     public function approve_csv()
+public function approve_csv()
 {
-    $id = $this->input->post('id');
+    $id  = $this->input->post('id');
     $csv = get_row('csv_uploads', ' where id=' . $id);
-    
+
     $arrayFromCSV = array_map('str_getcsv', file($csv->file_name));
 
     foreach ($arrayFromCSV as $key => $row) {
         if ($key > 0) {
 
-            // Clean mobile number (remove non-digits)
-            $mobile_no = preg_replace('/\D/', '', $row[2]);
+            // Extract columns safely
+            $contact_name = trim($row[0] ?? '');
+            $email        = trim($row[1] ?? '');
+            $mobile_raw   = trim($row[2] ?? '');
+            $address      = trim($row[3] ?? '');
+            $description  = trim($row[4] ?? '');
+            $source       = trim($row[5] ?? '');
 
-            // Validate mobile number (must be exactly 10 digits)
+            // ✅ Skip if required fields (except description) are empty
+            if (empty($contact_name) || empty($email) || empty($mobile_raw) || empty($address) || empty($source)) {
+                continue;
+            }
+
+            // ✅ Clean mobile number
+            $mobile_no = preg_replace('/\D/', '', $mobile_raw);
+
+            // If starts with 91 and length 12 → trim to last 10
+            if (strlen($mobile_no) == 12 && substr($mobile_no, 0, 2) == '91') {
+                $mobile_no = substr($mobile_no, 2);
+            }
+
+            // Validate: must be exactly 10 digits
             if (strlen($mobile_no) != 10) {
-                // Skip this row or log error
                 continue; // skip invalid mobile numbers
             }
 
+            // ✅ Prepare lead data (duplicates allowed now)
             $data = array(
-                'contact_name' => $row[0],
+                'contact_name' => $contact_name,
                 'mobile_no'    => $mobile_no,
-                'email'        => $row[1],
-                'owner_name'   => $row[0],
-                'address'      => $row[3],
-                'description'  => $row[4],
-                'source'       => $row[5],
+                'email'        => $email,
+                'owner_name'   => $contact_name,
+                'address'      => $address,
+                'description'  => $description, // can be null
+                'source'       => $source,
                 'remark'       => 'Fresh Lead',
                 'parent_id'    => $this->session->userdata('user_info')->id,
                 'assign_to'    => $this->session->userdata('site_userid'),
@@ -415,17 +433,18 @@ public function uploads_file($path,$fileName)
 
             $lead_id = $this->Common_Model->insert('leads', $data);
 
+            // ✅ Insert status log
             $data2 = array(
-                'lead_id'    => $lead_id,
-                'created_by' => $this->session->userdata('site_userid'),
-                'remark'     => 'Fresh Lead',
-                'date_created'=> date("Y-m-d")
+                'lead_id'      => $lead_id,
+                'created_by'   => $this->session->userdata('site_userid'),
+                'remark'       => 'Fresh Lead',
+                'date_created' => date("Y-m-d")
             );
             $this->Common_Model->insert('lead_status_log', $data2);
         }
     }
 
-    // Mark CSV as approved
+    // ✅ Mark CSV as approved
     $this->Common_Model->update('csv_uploads', array('status' => 1), array('id' => $id));
 }
 
@@ -448,4 +467,71 @@ public function uploads_file($path,$fileName)
           $data['data']=get_row('leads',' where id='.$id);
           $this->load->view('lead_details',$data);
       }
+      public function delete_multiple()
+{
+    $ids = $this->input->post('ids'); // array of IDs
+
+    if (!empty($ids)) {
+        $this->db->where_in('id', $ids);
+        $this->db->delete('leads');
+        echo "success";
+    } else {
+        echo "no_ids";
+    }
+}
+public function store()
+{
+    $contact_name = $this->input->post('contact_name');
+    $email        = $this->input->post('email');
+    $mobile_no    = preg_replace('/\D/', '', $this->input->post('mobile_no'));
+  
+    $description  = $this->input->post('description');
+    $source       = $this->input->post('source');
+
+    // Validate mobile
+    if (strlen($mobile_no) == 12 && substr($mobile_no, 0, 2) == '91') {
+        $mobile_no = substr($mobile_no, 2);
+    }
+    if (strlen($mobile_no) != 10) {
+        $this->session->set_flashdata('errors', 'Invalid mobile number');
+        redirect('Leads/add');
+    }
+
+    $user_info = $this->session->userdata('user_info');
+
+    // Determine parent_id based on role
+    $parent_id = in_array($user_info->role, [1,2]) ? $user_info->id : ($user_info->parent_id ?? $user_info->id);
+
+    // Insert lead
+    $lead_data = [
+        'contact_name' => $contact_name,
+        'mobile_no'    => $mobile_no,
+        'email'        => $email,
+        'owner_name'   => $contact_name,
+       
+        'description'  => $description,
+        'source'       => $source,
+        'remark'       => 'Fresh Lead',
+        'parent_id'    => $parent_id,
+        'assign_to'    => $this->session->userdata('site_userid'),
+        'created_by'   => $this->session->userdata('site_userid'),
+        'created_at'   => date('Y-m-d H:i:s')
+    ];
+
+    $lead_id = $this->Common_Model->insert('leads', $lead_data);
+
+    // ✅ Insert status log automatically
+    $status_log = [
+        'lead_id'      => $lead_id,
+        'created_by'   => $this->session->userdata('site_userid'),
+        'remark'       => 'Fresh Lead',
+        'date_created' => date("Y-m-d")
+    ];
+    $this->Common_Model->insert('lead_status_log', $status_log);
+
+    $this->session->set_flashdata('success', 'Lead added successfully.');
+    redirect('Leads/list');
+}
+
+
 }

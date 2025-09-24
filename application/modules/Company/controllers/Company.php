@@ -29,54 +29,114 @@ class Company extends MY_Controller
     }
 
     // Add company (insert into users only)
-    public function add_company()
-    {
-        $company_name = $this->input->post('company_name');
-        $email        = $this->input->post('email');
-        $phone        = $this->input->post('phone');
-        $subusers     = $this->input->post('subusers');
-        $address      = $this->input->post('address');
-        $tenure       = $this->input->post('tenure');
-        $password     = $this->input->post('password');
+public function add_company()
+{
+    $company_name = $this->input->post('company_name');
+    $email        = $this->input->post('email');
+    $phone        = $this->input->post('phone');
+    $subusers     = $this->input->post('subusers');
+    $address      = $this->input->post('address');
+    $tenure       = $this->input->post('tenure');
+    $password     = $this->input->post('password');
 
-        $created_at   = date('Y-m-d H:i:s');
-        $updated_at   = $created_at;
+    $created_at   = date('Y-m-d H:i:s');
+    $updated_at   = $created_at;
 
-        // Calculate expiry date
-        if ($tenure == '3') {
-            $expiry_date = date('Y-m-d', strtotime("+3 months"));
-        } elseif ($tenure == '6') {
-            $expiry_date = date('Y-m-d', strtotime("+6 months"));
-        } else {
-            $expiry_date = date('Y-m-d', strtotime("+1 year"));
-        }
-
-        // Insert into users (merged table)
-        $userData = [
-            'username'             => $email,
-            'password'             => $this->encrypt_decrypt('encrypt', $password),
-            'role'                 => 2,
-            'name'                 => $company_name,
-            'company_name'         => $company_name,
-            'email'                => $email,
-            'parent_id'            => $this->session->userdata('user_info')->id,
-            'phone'                => $phone,
-            'subusers'             => $subusers,
-            'address'              => $address,
-            'tenure'               => $tenure,
-            'expiry_date'          => $expiry_date,
-            'status'               => 'active',
-            'created_at'           => $created_at,
-            'updated_at'           => $updated_at,
-            'create_password_key'  => null,
-            'create_password_time' => null
-        ];
-
-        $this->db->insert('users', $userData);
-
-        $this->session->set_flashdata('success', 'Company created successfully.');
-        redirect('company');
+    // Calculate expiry date
+    if ($tenure == '3') {
+        $expiry_date = date('Y-m-d', strtotime("+3 months"));
+    } elseif ($tenure == '6') {
+        $expiry_date = date('Y-m-d', strtotime("+6 months"));
+    } else {
+        $expiry_date = date('Y-m-d', strtotime("+1 year"));
     }
+
+    // Insert into users table
+    $userData = [
+        'username'             => $email,
+        'password'             => $this->encrypt_decrypt('encrypt', $password),
+        'role'                 => 2,
+        'name'                 => $company_name,
+        'company_name'         => $company_name,
+        'email'                => $email,
+        'parent_id'            => $this->session->userdata('user_info')->id,
+        'phone'                => $phone,
+        'subusers'             => $subusers,
+        'address'              => $address,
+        'tenure'               => $tenure,
+        'expiry_date'          => $expiry_date,
+        'status'               => 'active',
+        'created_at'           => $created_at,
+        'updated_at'           => $updated_at,
+        'create_password_key'  => null,
+        'create_password_time' => null
+    ];
+
+    $this->db->insert('users', $userData);
+
+    // Get the newly created company ID
+    $company_id = $this->db->insert_id();
+
+    // ---------------------- Insert default status rows ----------------------
+$default_statuses = [
+    'In Progress',
+    'Completed',
+    'Pending',
+    'Network Failed',
+    'Follow Up',
+    'Call Not Answered',
+    'Meeting Scheduled',
+    'Meeting Done',
+    'Meeting Pending',
+    'Other',
+    'Closed'
+];
+
+foreach ($default_statuses as $status_name) {
+    $this->db->insert('master_table', [
+        'parent_id' => $company_id,
+        'name'      => $status_name,
+        'type'      => 'status'
+    ]);
+}
+
+// ---------------------- Insert default priority rows ----------------------
+$default_priorities = ['Low', 'Mid', 'High', 'Important', 'High Priority', 'Urgent'];
+
+foreach ($default_priorities as $priority_name) {
+    $this->db->insert('master_table', [
+        'parent_id' => $company_id,
+        'name'      => $priority_name,
+        'type'      => 'priority'
+    ]);
+}
+
+// ---------------------- Insert default source rows ----------------------
+$default_sources = [
+    'Reference',
+    'Newspaper',
+    'Complete Ad',
+    'Just Dial',
+    'BNI',
+    'Website',
+    'Self Call',
+    'Calling',
+    'GMB',
+    'Unknown'
+];
+
+foreach ($default_sources as $source_name) {
+    $this->db->insert('master_table', [
+        'parent_id' => $company_id,
+        'name'      => $source_name,
+        'type'      => 'source'
+    ]);
+}
+
+    $this->session->set_flashdata('success', 'Company created successfully with default statuses.');
+    redirect('Company');
+}
+
 
     private function encrypt_decrypt($action, $string)
     {
