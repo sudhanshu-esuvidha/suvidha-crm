@@ -122,7 +122,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 </style>
 
 
-					<div class="row mt-2">
+					<div class="row mt-2" >
 					<?php if($user->role == 1 || $user->role == 2){ ?>
 <div class="col-md-12 d-flex gap-2">
 
@@ -160,11 +160,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     </select>
 
 </div>
- <div class="row mt-2 mb-3">
-    <div class="col-md-4 ">
-        <input type="text" id="lead_search" class="form-control" placeholder="Search by name or mobile number" style="width:80%;">
-    </div>
-</div>
+
 
 
 <style>
@@ -186,7 +182,8 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 </style>
 
 <?php } ?>
-<div class="quick-filters d-flex gap-2 mb-3">
+<div class="quick-filters d-flex gap-2 mb-3 mt-3">
+
   <a href="<?= base_url('Leads/list?filter=fresh') ?>" class="btn btn-success btn-sm">
     <i class="fas fa-bolt"></i> Fresh
 </a>
@@ -195,17 +192,52 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
         <i class="fas fa-calendar-check"></i> Follow-up
     </a>
 
+    <!-- <a href="<?= base_url('Leads/list?filter=today_created') ?>" class="btn btn-info btn-sm">
+        <i class="fas fa-calendar-day"></i> Created Today
+    </a> -->
+
     <a href="<?= base_url('Leads/list') ?>" class="btn btn-secondary btn-sm">
         <i class="fas fa-list"></i> All Leads
     </a>
+   
+</div>
+<div class="d-flex gap-2 align-items-center mb-3">
+    <!-- Date Filter -->
+    <input type="date" id="filter_date" class="form-control" onchange="filterByDate()" style="flex: 1;" placeholder="Select Date">
+
+    <!-- Search Filter -->
+    <input type="text" id="lead_search" class="form-control" onkeyup="filterBySearch()" style="flex: 1;" placeholder="Search by name or mobile number">
 </div>
 
-<style>
-.quick-filters {
-    display: flex !important;   /* force show */
-}
-</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $("#lead_search").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
 
+        // ✅ Filter Desktop Table Rows
+        $("table tbody tr").each(function() {
+            var rowText = $(this).text().toLowerCase();
+            $(this).toggle(rowText.indexOf(value) > -1);
+        });
+
+        // ✅ Filter Mobile List/Cards
+        $("#list-mobile li").each(function() {
+            var itemText = $(this).text().toLowerCase();
+            $(this).toggle(itemText.indexOf(value) > -1);
+        });
+    });
+});
+</script>
+
+<script>
+function filterByDate() {
+    var date = $("#filter_date").val();
+    if(date) {
+        window.location.href = "<?= base_url('Leads/list') ?>?date=" + date;
+    }
+}
+</script>
 
 						<?php if($this->session->flashdata('success')){ ?>
 						<div class="col-md-12">
@@ -223,7 +255,7 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
 					      
 					  </div>    
 					</div>
-<div class="row mt-2">
+<div class="row mt-2" style="padding-right:0.01px !important;">
 
     <!-- ✅ Mobile View (Cards) -->
 <div class="col-12 d-block d-md-none">
@@ -654,7 +686,7 @@ if(!in_array($role_id, [1,2])){
 
   <div class="mb-3">
     <label class="form-label fw-bold">Next Meeting Date & Time</label>
-    <input type="text" id="nextFollowup" name="next_followup" class="form-control" placeholder="Select date and time">
+    <input  type="datetime-local"   name="next_followup" class="form-control" placeholder="Select date and time">
 </div>
 
     <div class="mb-3">
@@ -694,6 +726,20 @@ flatpickr("#nextFollowup", {
 		</div>
 
 <style>
+    .modal {
+    z-index: 10000 !important;
+}
+
+.modal-backdrop {
+    z-index: 1900 !important;
+}
+
+/* Keep floating buttons below modal */
+.floating-btn, 
+#pendingFollowupBtn, 
+#dialerBtn {
+    z-index: 1800 !important;
+}
     /* Optional custom styling for modern look */
     .modal-body .form-label {
         font-size: 0.95rem;
@@ -843,27 +889,30 @@ function delete_selected() {
         }
     });
 }
-document.getElementById("freshLeadsBtn").addEventListener("click", function() {
-    // Filter table rows (desktop)
-    $("table tbody tr").each(function() {
-        const statusText = $(this).find("td:nth-child(7)").text().trim();
-        if(statusText.includes("Fresh Lead")) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
-    });
+$(document).ready(function() {
+    $("#freshLeadsBtn").on("click", function() {
+        // Filter table rows
+        $("table tbody tr").each(function() {
+            const statusText = $(this).find("td:nth-child(7)").text().trim();
+            if(statusText.includes("Fresh Lead")) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
 
-    // Filter mobile cards (status badge)
-    $("#list-mobile li").each(function() {
-        const badgeText = $(this).find("span.badge").text().trim();
-        if(badgeText.includes("Fresh Lead")) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
+        // Filter mobile cards
+        $("#list-mobile li").each(function() {
+            const badgeText = $(this).find("span.badge").text().trim();
+            if(badgeText.includes("Fresh Lead")) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
     });
 });
+
 // Show only Fresh Leads
 $("#freshLeadsBtn").click(function(){
     $(".lead-row").show().filter(function(){
@@ -880,7 +929,7 @@ $("#followupLeadsBtn").click(function(){
 </script>
 
 
-<script>
+<!-- <script>
 $(document).ready(function() {
     $("#lead_search").on("keyup", function() {
         var value = $(this).val().toLowerCase();
@@ -900,7 +949,7 @@ $(document).ready(function() {
         });
     });
 });
-</script>
+</script> -->
 
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -78,7 +78,10 @@ if (!empty($_GET['filter']) && $_GET['filter'] == 'yesterday_pending') {
         $status = intval($_GET['status']);
         $where .= " AND status_id = {$status}";
     }
-
+if (!empty($_GET['date'])) {
+    $selected_date = $_GET['date']; // expects format YYYY-MM-DD
+    $where .= " AND DATE(created_at) = '{$selected_date}'";
+}
     $data['total']  = get_total_of_table('leads', ' WHERE 1 ' . $where);
     $data['result'] = get_all_list('leads', ' WHERE 1 ' . $where . ' ORDER BY id DESC LIMIT 0,50');
     $data['title']  = "Leads/list";
