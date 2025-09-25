@@ -5,6 +5,42 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 <style>
+    /* Extra space at the bottom so charts don't get cut */
+.content.container-fluid {
+    padding-bottom: 120px; /* space for floating buttons */
+}
+
+/* Keep floating buttons fixed, but aligned cleanly */
+#pendingFollowupBtn {
+    position: fixed;
+    bottom: 90px;  /* sits above dialer button */
+    right: 20px;
+    border-radius: 50%;
+    width: 60px;
+    height: 260px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    z-index: 9999;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+#dialerBtn {
+    position: fixed;
+    bottom: 20px;  /* sits at the bottom */
+    right: 20px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    z-index: 9999;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
     /* Dashboard cards */
     .dashboard-card {
         border-radius: 0.75rem;
@@ -36,7 +72,7 @@
 
     /* Mobile adjustments */
     @media (max-width: 576px) {
-        .dashboard-card { height: 100px; padding: 5px; }
+        .dashboard-card { height: 100px; padding: 1px; }
         .dashboard-card h6 { font-size: 0.75rem; }
         .dashboard-card h3 { font-size: 1.1rem; }
 
@@ -58,7 +94,7 @@
                 <div class="row mb-3">
 <div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Leads/list'); ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-info text-white position-relative p-3">
+        <div class="dashboard-card bg-info text-white position-relative ">
             <!-- Icon at top-left -->
             <i class="bi bi-people-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
@@ -71,7 +107,7 @@
 
 <div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Task'); ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-success text-white position-relative p-3">
+        <div class="dashboard-card bg-success text-white position-relative ">
             <!-- Professional Icon -->
             <i class="bi bi-kanban-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
@@ -83,7 +119,7 @@
 </div>
 <div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Leads/list?filter=today_followup') ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-warning text-white position-relative p-3">
+        <div class="dashboard-card bg-warning text-white position-relative ">
             <!-- Professional Icon -->
             <i class="bi bi-clock-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
@@ -97,7 +133,7 @@
 
 <div class="col-6 col-sm-6 col-md-6 position-relative">
     <a href="<?= base_url('Leads/list?filter=tomorrow_followup') ?>" class="text-decoration-none">
-        <div class="dashboard-card bg-danger text-white position-relative p-3">
+        <div class="dashboard-card bg-danger text-white position-relative ">
             <!-- Professional Icon -->
             <i class="bi bi-calendar-check-fill position-absolute" style="top: 10px; left: 10px; font-size: 24px;"></i>
 
@@ -309,7 +345,12 @@ callNumberBtn.addEventListener('click', () => {
 </script>
 
 <script>
-    // Convert PHP array into JS arrays
+    // ---- GLOBAL DEFAULTS for legends ----
+    Chart.defaults.plugins.legend.labels.boxWidth  = 12;
+    Chart.defaults.plugins.legend.labels.boxHeight = 12;
+    Chart.defaults.plugins.legend.labels.font      = { size: 12 };
+
+    // ---- Lead Sources Pie Chart ----
     const leadSources = <?= json_encode(array_column($lead_sources, 'source')); ?>;
     const leadCounts  = <?= json_encode(array_column($lead_sources, 'lead_count')); ?>;
 
@@ -329,17 +370,14 @@ callNumberBtn.addEventListener('click', () => {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
+            plugins: { legend: { position: 'bottom' } }
         }
     });
-</script>
 
-<script>
-    // Task Status Pie Chart
+    // ---- Task Status Pie Chart ----
     const taskLabels = <?= json_encode(array_keys($today_task_status)); ?>;
     const taskData   = <?= json_encode(array_values($today_task_status)); ?>;
+
     new Chart(document.getElementById('taskStatusChart').getContext('2d'), {
         type: 'pie',
         data: {
@@ -349,12 +387,17 @@ callNumberBtn.addEventListener('click', () => {
                 backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d']
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
     });
 
-    // Lead Status Pie Chart
+    // ---- Lead Status Pie Chart ----
     const leadLabels = <?= json_encode(array_keys($today_lead_status)); ?>;
     const leadData   = <?= json_encode(array_values($today_lead_status)); ?>;
+
     new Chart(document.getElementById('leadStatusChart').getContext('2d'), {
         type: 'pie',
         data: {
@@ -364,84 +407,78 @@ callNumberBtn.addEventListener('click', () => {
                 backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6c757d']
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
     });
 
-    // Tasks Trend Bar Chart
-   // ---- TASKS TREND (stacked by status) ----
-const yesterdayTaskStatus = <?= json_encode($yesterday_task_status); ?>;
-const todayTaskStatus     = <?= json_encode($today_task_status); ?>;
-const tomorrowTaskStatus  = <?= json_encode($tomorrow_task_status); ?>;
+    // ---- TASKS TREND (stacked by status) ----
+    const yesterdayTaskStatus = <?= json_encode($yesterday_task_status); ?>;
+    const todayTaskStatus     = <?= json_encode($today_task_status); ?>;
+    const tomorrowTaskStatus  = <?= json_encode($tomorrow_task_status); ?>;
 
-const taskStatuses = [...new Set([
-    ...Object.keys(yesterdayTaskStatus),
-    ...Object.keys(todayTaskStatus),
-    ...Object.keys(tomorrowTaskStatus)
-])];
+    const taskStatuses = [...new Set([
+        ...Object.keys(yesterdayTaskStatus),
+        ...Object.keys(todayTaskStatus),
+        ...Object.keys(tomorrowTaskStatus)
+    ])];
 
-// Assign colors dynamically (fallback cycling)
-const taskColors = ['#28a745','#ffc107','#17a2b8','#dc3545','#6c757d','#007bff'];
+    const taskColors = ['#28a745','#ffc107','#17a2b8','#dc3545','#6c757d','#007bff'];
 
-const taskDatasets = taskStatuses.map((status, i) => ({
-    label: status,
-    data: [
-        yesterdayTaskStatus[status] ?? 0,
-        todayTaskStatus[status] ?? 0,
-        tomorrowTaskStatus[status] ?? 0
-    ],
-    backgroundColor: taskColors[i % taskColors.length]
-}));
+    const taskDatasets = taskStatuses.map((status, i) => ({
+        label: status,
+        data: [
+            yesterdayTaskStatus[status] ?? 0,
+            todayTaskStatus[status] ?? 0,
+            tomorrowTaskStatus[status] ?? 0
+        ],
+        backgroundColor: taskColors[i % taskColors.length]
+    }));
 
-new Chart(document.getElementById('tasksTrendChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-        labels: ["Yesterday", "Today", "Tomorrow"],
-        datasets: taskDatasets
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { tooltip: { mode: 'index', intersect: false } },
-        scales: { x: { stacked: true }, y: { stacked: true } }
-    }
-});
+    new Chart(document.getElementById('tasksTrendChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: ["Yesterday", "Today", "Tomorrow"], datasets: taskDatasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
+            scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+    });
 
-// ---- LEADS TREND (stacked by status) ----
-const yesterdayLeadStatus = <?= json_encode($yesterday_lead_status); ?>;
-const todayLeadStatus     = <?= json_encode($today_lead_status); ?>;
-const tomorrowLeadStatus  = <?= json_encode($tomorrow_lead_status); ?>;
+    // ---- LEADS TREND (stacked by status) ----
+    const yesterdayLeadStatus = <?= json_encode($yesterday_lead_status); ?>;
+    const todayLeadStatus     = <?= json_encode($today_lead_status); ?>;
+    const tomorrowLeadStatus  = <?= json_encode($tomorrow_lead_status); ?>;
 
-const leadStatuses = [...new Set([
-    ...Object.keys(yesterdayLeadStatus),
-    ...Object.keys(todayLeadStatus),
-    ...Object.keys(tomorrowLeadStatus)
-])];
+    const leadStatuses = [...new Set([
+        ...Object.keys(yesterdayLeadStatus),
+        ...Object.keys(todayLeadStatus),
+        ...Object.keys(tomorrowLeadStatus)
+    ])];
 
-// Reuse same color set
-const leadDatasets = leadStatuses.map((status, i) => ({
-    label: status,
-    data: [
-        yesterdayLeadStatus[status] ?? 0,
-        todayLeadStatus[status] ?? 0,
-        tomorrowLeadStatus[status] ?? 0
-    ],
-    backgroundColor: taskColors[i % taskColors.length]
-}));
+    const leadDatasets = leadStatuses.map((status, i) => ({
+        label: status,
+        data: [
+            yesterdayLeadStatus[status] ?? 0,
+            todayLeadStatus[status] ?? 0,
+            tomorrowLeadStatus[status] ?? 0
+        ],
+        backgroundColor: taskColors[i % taskColors.length]
+    }));
 
-new Chart(document.getElementById('leadsTrendChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-        labels: ["Yesterday", "Today", "Tomorrow"],
-        datasets: leadDatasets
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { tooltip: { mode: 'index', intersect: false } },
-        scales: { x: { stacked: true }, y: { stacked: true } }
-    }
-});
-
+    new Chart(document.getElementById('leadsTrendChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: ["Yesterday", "Today", "Tomorrow"], datasets: leadDatasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
+            scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+    });
 </script>
 </body>
 </html>

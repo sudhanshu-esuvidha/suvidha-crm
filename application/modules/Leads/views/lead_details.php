@@ -52,12 +52,12 @@
 			<div class="notification-tab">
 				<ul class="nav nav-tabs" role="tablist">
 					<li>
-						<a href="#" class="active" data-bs-toggle="tab" data-bs-target="#notification_tab" aria-selected="true" role="tab">
+						<a href="#" class="active" data-bs-toggle="tab" data-bs-target="#notification_tab" aria-selected="true" role="tab" style="font-size:16px;">
 							<i class="la la-bell"></i> Details
 						</a>
 					</li>
 					<li>
-						<a href="#" data-bs-toggle="tab" data-bs-target="#schedule_tab" aria-selected="false" tabindex="-1" role="tab">
+						<a href="#" data-bs-toggle="tab" data-bs-target="#schedule_tab" aria-selected="false" tabindex="-1" role="tab" style="font-size:16px;">
 							<i class="la la-list-alt"></i>  History
 						</a>
 					</li>

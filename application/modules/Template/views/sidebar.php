@@ -91,7 +91,11 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
             </ul>
         </li>
     <?php endif; ?>
-    <li>
-            <a class="dropdown-item" href="<?= base_url('logout'); ?>">Logout</a>
-        </li>
+  <!-- Logout Button -->
+    <li> 
+<a href="<?= base_url('logout') ?>" class="btn  d-flex align-items-center text-white" >
+    <i class="la la-sign-out-alt"></i>  <p style="margin-left:10px;">Logout</p>
+</a>
+ </li>
+
 </ul>
