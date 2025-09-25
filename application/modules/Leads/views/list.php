@@ -201,6 +201,55 @@ $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->
     </a>
    
 </div>
+<?php
+$logged_in_user = $this->session->userdata('user_info');
+$role = $logged_in_user->role;
+
+// Show status filter only if role is NOT 1 or 2
+if ($role != 1 && $role != 2):
+    $logged_in_user_id = $logged_in_user->id;
+
+    // Fetch parent_id for this user
+    $user = $this->db->get_where('users', ['id' => $logged_in_user_id])->row();
+    $parent_id_to_use = $user->parent_id ?? 0;
+
+    // Fetch status options
+    $status_options = $this->db->get_where('master_table', [
+        'type' => 'status',
+        'parent_id' => $parent_id_to_use
+    ])->result();
+?>
+<div class="row mt-2">
+  <div class="col-12 col-md-6 mb-2">
+    <select id="status_filter" class="form-select form-select-sm" style="
+        width: 100%;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        transition: border-color 0.2s;
+    ">
+        <option value="">-- Select Status --</option>
+        <?php foreach($status_options as $status): ?>
+            <option value="<?= $status->id ?>" <?php if(isset($_GET['status']) && $_GET['status']==$status->id) echo 'selected'; ?>>
+                <?= htmlspecialchars($status->name) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+<style>
+    #status_filter:focus {
+        border-color: #4a90e2;
+        outline: none;
+        box-shadow: 0 0 0 0.15rem rgba(74, 144, 226, 0.25);
+    }
+</style>
+
+</div>
+<?php endif; ?>
+
 <div class="d-flex gap-2 align-items-center mb-3">
     <!-- Date Filter -->
     <input type="date" id="filter_date" class="form-control" onchange="filterByDate()" style="flex: 1;" placeholder="Select Date">
@@ -238,6 +287,24 @@ function filterByDate() {
     }
 }
 </script>
+<script>
+function filter_status_only() {
+    var status = $('#status_filter').val();
+    var url = "<?= base_url('Leads/list') ?>?";
+
+    if(status) {
+        url += "status=" + status;
+    }
+
+    window.location.href = url;
+}
+
+// Attach onchange event
+$(document).ready(function() {
+    $('#status_filter').on('change', filter_status_only);
+});
+</script>
+
 
 						<?php if($this->session->flashdata('success')){ ?>
 						<div class="col-md-12">
@@ -1002,7 +1069,9 @@ $(document).ready(function() {
     color: #fff;
     text-decoration: none;
 }
-
+.employee-notification-grid{
+        box-shadow: 0 4px 24px 0 rgba(88, 74, 74, 0.25)!important;
+}
 .floating-btn-fresh .btn-text {
     font-size: 10px; /* smaller text */
     margin-top: 2px;  /* space between icon and text */
