@@ -28,6 +28,59 @@
     text-decoration: none;
     color: #fff;
 }
+.whatsapp-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    height:200px;
+    width: 280px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+}
+
+.whatsapp-box textarea {
+    width: 100%;
+    height: 80px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 14px;
+    resize: none;
+    margin-bottom: 8px;
+}
+
+.whatsapp-box .send-btn {
+    background-color: #25d366;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.whatsapp-box .close-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.whatsapp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+    cursor: move;
+}
 
 </style>
 <body>
@@ -83,7 +136,21 @@
 																<div class="staff-msg">
 																    <a class="btn btn-custom" href="tel:<?php echo $data->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $data->mobile_no; ?>)">
 									<i class="la la-phone-volume"></i>	Make Call
-																		</a> </div>
+																		</a> <!-- WhatsApp Button -->
+<button type="button" class="btn btn-success" onclick="openWhatsAppBox('<?php echo $data->mobile_no; ?>')">
+    <i class="la la-whatsapp"></i> WhatsApp
+</button>
+
+<!-- Draggable WhatsApp Box -->
+<div id="whatsappBox" class="whatsapp-box">
+    <div id="whatsappHeader" class="whatsapp-header">
+        <span>Send WhatsApp Message</span>
+        <button class="close-btn" onclick="closeWhatsAppBox()">✕</button>
+    </div>
+    <textarea id="whatsappMessage" placeholder="Type your message..."></textarea>
+    <button class="send-btn" onclick="sendWhatsApp()">Send</button>
+</div>
+</div>
 															</div>
 														</div>
 														<div class="col-md-7">
@@ -445,8 +512,100 @@ p{ margin-bottom:0px!important;}
         </div>
     </div>
 </div>
+<script>
 
-	</body>
+let currentMobile = "";
+
+function openWhatsAppBox(mobile) {
+    currentMobile = mobile;
+    const box = document.getElementById("whatsappBox");
+    box.style.display = "flex";
+    document.getElementById("whatsappMessage").focus();
+}
+
+function closeWhatsAppBox() {
+    const box = document.getElementById("whatsappBox");
+    box.style.display = "none";
+    document.getElementById("whatsappMessage").value = "";
+}
+
+function sendWhatsApp() {
+    let message = document.getElementById("whatsappMessage").value.trim();
+    if (!message) {
+        alert("Please type a message first.");
+        return;
+    }
+
+    let url = "https://wa.me/" + currentMobile + "?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+
+    closeWhatsAppBox();
+}
+
+// ---------------- Drag for Desktop & Mobile ----------------
+dragElement(document.getElementById("whatsappBox"));
+
+function dragElement(elmnt) {
+    const header = document.getElementById("whatsappHeader");
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    // Mouse events
+    header.addEventListener('mousedown', dragMouseDown);
+    // Touch events
+    header.addEventListener('touchstart', dragTouchStart, {passive:false});
+
+    function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+
+    // Touch support
+    function dragTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        pos3 = touch.clientX;
+        pos4 = touch.clientY;
+        document.ontouchend = closeTouchDrag;
+        document.ontouchmove = elementTouchDrag;
+    }
+
+    function elementTouchDrag(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        pos1 = pos3 - touch.clientX;
+        pos2 = pos4 - touch.clientY;
+        pos3 = touch.clientX;
+        pos4 = touch.clientY;
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeTouchDrag() {
+        document.ontouchend = null;
+        document.ontouchmove = null;
+    }
+}
+</script>
+
+       </body>
 
 
 	</html>

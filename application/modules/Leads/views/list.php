@@ -255,29 +255,83 @@ if ($role != 1 && $role != 2):
     <input type="date" id="filter_date" class="form-control" onchange="filterByDate()" style="flex: 1;" placeholder="Select Date">
 
     <!-- Search Filter -->
-    <input type="text" id="lead_search" class="form-control" onkeyup="filterBySearch()" style="flex: 1;" placeholder="Search by name or mobile number">
+<input type="text" id="lead_search" class="form-control" placeholder="Search by name, mobile number or source" style="flex: 1;">
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    $("#lead_search").on("keyup", function() {
-        var value = $(this).val().toLowerCase();
+$(function() {
 
-        // ✅ Filter Desktop Table Rows
-        $("table tbody tr").each(function() {
-            var rowText = $(this).text().toLowerCase();
-            $(this).toggle(rowText.indexOf(value) > -1);
-        });
+  // Helper: try to extract a meaningful "source" string from a row/card element
+  function extractSourceText($el) {
+    // 1) Elements with class containing "source" (handles .source, .lead-source, etc.)
+    var $found = $el.find('[class*="source"], .source, [data-source], [data-source-name]');
+    if ($found.length) {
+      var parts = [];
+      $found.each(function() {
+        var $t = $(this);
+        var txt = $.trim($t.text());
+        if (!txt) {
+          txt = $.trim($t.attr('data-source') || $t.attr('data-source-name') || $t.attr('title') || $t.attr('aria-label') || '');
+        }
+        if (txt) parts.push(txt);
+      });
+      if (parts.length) return parts.join(' ').toLowerCase();
+    }
 
-        // ✅ Filter Mobile List/Cards
-        $("#list-mobile li").each(function() {
-            var itemText = $(this).text().toLowerCase();
-            $(this).toggle(itemText.indexOf(value) > -1);
-        });
+    // 2) Attributes directly on the element (fallback)
+    var attrs = ['data-source', 'data-source-name', 'title', 'aria-label', 'alt'];
+    for (var i = 0; i < attrs.length; i++) {
+      var a = $el.attr(attrs[i]);
+      if (a) return $.trim(a).toLowerCase();
+    }
+
+    // 3) Images/icons inside the element may have title/alt
+    var $img = $el.find('img[alt], img[title], i[title], span[title]').first();
+    if ($img.length) {
+      return $.trim($img.attr('alt') || $img.attr('title') || '').toLowerCase();
+    }
+
+    return '';
+  }
+
+  // Cache selectors
+  var $rows = $("table tbody tr");
+  var $cards = $("#list-mobile li");
+
+  // Use 'input' (captures paste, cut, etc.) instead of only keyup
+  $("#lead_search").on("input", function() {
+    var value = $(this).val().toLowerCase().trim();
+
+    // If empty, show all
+    if (!value) {
+      $rows.show();
+      $cards.show();
+      return;
+    }
+
+    // Filter rows
+    $rows.each(function() {
+      var $row = $(this);
+      var rowText = $row.text().toLowerCase();
+      var sourceText = extractSourceText($row); // robust source extraction
+      var match = rowText.indexOf(value) > -1 || sourceText.indexOf(value) > -1;
+      $row.toggle(match);
     });
+
+    // Filter mobile cards/list items
+    $cards.each(function() {
+      var $card = $(this);
+      var cardText = $card.text().toLowerCase();
+      var sourceText = extractSourceText($card);
+      var match = cardText.indexOf(value) > -1 || sourceText.indexOf(value) > -1;
+      $card.toggle(match);
+    });
+  });
 });
 </script>
+
+
 
 <script>
 function filterByDate() {
@@ -351,6 +405,7 @@ $(document).ready(function() {
                                                     </span>
                                     <span class="small d-block mt-1">
                                         <i class="fa fa-map-marker"></i> <?php echo $row->address; ?>
+                                         
                                     </span>
                                    
                                 </a>
@@ -374,11 +429,14 @@ $(document).ready(function() {
 
                             <?php if($last_call->remark){ ?>
                             <div class="mt-2" style="font-size:14px;">Remark: <i><?php echo $last_call->remark; ?></i></div>
+                               <div class="mt-2" style="font-size:14px;">Source: <i>   <?php echo $row->source; ?></i></div>
+                           
                             <?php } ?>
 
                             <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
                                 <span>Next Followup: <?php if($row->next_followup!="0000-00-00 00:00:00"){ echo date("d-M-Y h:i a", strtotime($row->next_followup)); } ?></span>
                                 <span>Date Created: <?php echo date("d-M-Y h:i a", strtotime($row->created_at)); ?></span>
+                                
                             </div>
 
                             <div class="d-flex justify-content-between mt-3">
