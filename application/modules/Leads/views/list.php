@@ -411,6 +411,7 @@ $(document).ready(function() {
                     </span>
                 </a>
             <?php else: ?>
+
                 <!-- Multiple numbers: open modal -->
                 <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#mobileModal<?= $row->id ?>">
                     <?= ucwords($row->contact_name) ?>
@@ -420,30 +421,50 @@ $(document).ready(function() {
                 </a>
 
                 <!-- Modal -->
-                <div class="modal fade" id="mobileModal<?= $row->id ?>" tabindex="-1" aria-labelledby="mobileModalLabel<?= $row->id ?>" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="mobileModalLabel<?= $row->id ?>">Call Numbers - <?= ucwords($row->contact_name) ?></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                      </div>
-                      <div class="modal-body">
-                        <ul class="list-group">
-                            <?php foreach($numbers as $num): ?>
-                                <li class="list-group-item">
-                                    <a href="tel:<?= $num ?>" onclick="feedback_form(<?= $row->id ?>, '<?= $num ?>', '<?= addslashes($row->contact_name) ?>')">
-                                        <?= $num ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               <div class="modal fade" id="mobileModal<?= $row->id ?>" tabindex="-1" aria-labelledby="mobileModalLabel<?= $row->id ?>" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white rounded-top">
+                <h5 class="modal-title text-white" id="mobileModalLabel<?= $row->id ?>">
+                    <i class="fa-solid fa-phone me-2"></i> Call Numbers - <?= ucwords($row->contact_name) ?>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    <?php foreach($numbers as $num): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 shadow-sm rounded-3">
+                            <span><?= $num ?></span>
+                            <a href="tel:<?= $num ?>" 
+                               class="btn btn-success btn-sm" 
+                               onclick="feedback_form(<?= $row->id ?>, '<?= $num ?>', '<?= addslashes($row->contact_name) ?>')">
+                            Call
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Optional: add hover effect on list items */
+    #mobileModal<?= $row->id ?> .list-group-item:hover {
+        background-color: #f1f5f9;
+        transform: translateY(-2px);
+        transition: 0.2s;
+    }
+
+    #mobileModal<?= $row->id ?> .list-group-item span {
+        font-weight: 500;
+        font-size: 1rem;
+    }
+</style>
+
             <?php endif; ?>
  <span class="small d-block mt-1">
                 <i class="fa fa-map-marker"></i> <?= $row->address ?>

@@ -268,14 +268,18 @@ function makeCall() {
 												</div>
 <div class="pro-edit">
     <!-- Add Number Icon -->
-    <a href="#" class="edit-icon text-success me-2" data-bs-toggle="modal" data-bs-target="#addNumberModal">
-        <i class="fa-solid fa-circle-plus"></i>
+    <a href="#" class="edit-icon text-success" data-bs-toggle="modal" data-bs-target="#addNumberModal">
+        <i class="fa-solid fa-circle-plus" style="font-size: 28px;"></i>
     </a>
 
     <!-- Edit Pencil Icon -->
-    
 </div>
-											 
+<style>
+.fon {
+    font-size: 28px; /* increase as needed */
+}
+</style>
+
 
                                             </div>
 						</div>
