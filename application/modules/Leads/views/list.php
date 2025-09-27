@@ -384,84 +384,123 @@ $(document).ready(function() {
         <div class="card-body" style="padding: 1px;">
             <div class="employee-noti-content">
                 <ul class="employee-notification-list" id="list-mobile">
-                    <?php foreach($result as $row){  
-                        if($row->mobile_no){ 
-                            $assign_to = get_row('users',' where id='.$row->assign_to);
-                            $last_call = get_row('lead_status_log',' where lead_id='.$row->id.' order by id desc');
-                            $status = get_row('master_table',' where id='.$row->status_id);
-                    ?>
-                    <li class="employee-notification-grid" style="margin-bottom: 15px;">
-                        <div class="employee-notification-content" style="font-size: 15px;">
-                            <h6 style="font-size: 16px; font-weight: 600;">
-                                <input type="checkbox" class="lead_ids" value="<?php echo $row->id; ?>" style="transform: scale(1.2); margin-right: 5px;"> 
-                                <a href="tel:<?php echo $row->mobile_no; ?>" onclick="feedback_form(
-    <?php echo $row->id; ?>,
-    '<?php echo $row->mobile_no; ?>',
-    '<?php echo addslashes($row->contact_name); ?>'
-)">
-                                    <?php echo ucwords($row->contact_name); ?>
-                                     <span class="badge bg-primary pull-right">
-                                                        <i class="la la-phone-volume"></i> <?php echo $row->mobile_no; ?>
-                                                    </span>
-                                    <span class="small d-block mt-1">
-                                        <i class="fa fa-map-marker"></i> <?php echo $row->address; ?>
-                                         
-                                    </span>
-                                   
-                                </a>
-                            </h6>
+                  <?php foreach($result as $row): 
+    if($row->mobile_no): 
+        $assign_to = get_row('users',' where id='.$row->assign_to);
+        $last_call = get_row('lead_status_log',' where lead_id='.$row->id.' order by id desc');
+        $status    = get_row('master_table',' where id='.$row->status_id);
 
-                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
-                                <span>Assigned To: <b><?php echo ucwords($assign_to->name); ?></b></span>
-                                <span>Course: <b><?php echo $row->description; ?></b></span>
-                            </div>
+        // Prepare numbers array
+        $numbers = [$row->mobile_no];
+        if(!empty($row->add_mobile_no)){
+            $additional_numbers = explode(',', $row->add_mobile_no);
+            $numbers = array_merge($numbers, $additional_numbers);
+        }
+?>
+<li class="employee-notification-grid mb-3">
+    <div class="employee-notification-content" style="font-size: 15px;">
+        <h6 class="fw-bold">
+            <input type="checkbox" class="lead_ids" value="<?= $row->id ?>" style="transform: scale(1.2); margin-right: 5px;"> 
 
-                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
-                                <span>Last Call: <?php echo date("d-M-Y h:i a", strtotime($last_call->created_at)); ?></span>
-                                <span>
-                                    <?php if($row->status_id==0){ ?>
-                                        <span class="badge bg-success" style="font-size:13px; padding:6px 10px;">Fresh Lead</span>
-                                    <?php }else{ ?>
-                                        <span class="badge bg-info" style="font-size:13px; padding:6px 10px;"><?php echo $status->name; ?></span>
-                                    <?php } ?>
-                                </span>
-                            </div>
+            <?php if(count($numbers) == 1): ?>
+                <!-- Single number -->
+                <a href="tel:<?= $numbers[0] ?>" onclick="feedback_form(<?= $row->id ?>, '<?= $numbers[0] ?>', '<?= addslashes($row->contact_name) ?>')">
+                    <?= ucwords($row->contact_name) ?>
+                    <span class="badge bg-primary pull-right">
+                        <i class="la la-phone-volume"></i> <?= $numbers[0] ?>
+                    </span>
+                </a>
+            <?php else: ?>
+                <!-- Multiple numbers: open modal -->
+                <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#mobileModal<?= $row->id ?>">
+                    <?= ucwords($row->contact_name) ?>
+                    <span class="badge bg-primary pull-right">
+                        <i class="la la-phone-volume"></i> <?= $row->mobile_no ?>
+                    </span>
+                </a>
 
-                            <?php if($last_call->remark){ ?>
-                            <div class="mt-2" style="font-size:14px;">Remark: <i><?php echo $last_call->remark; ?></i></div>
-                               <div class="mt-2" style="font-size:14px;">Source: <i>   <?php echo $row->source; ?></i></div>
-                           
-                            <?php } ?>
-
-                            <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
-                                <span>Next Followup: <?php if($row->next_followup!="0000-00-00 00:00:00"){ echo date("d-M-Y h:i a", strtotime($row->next_followup)); } ?></span>
-                                <span>Date Created: <?php echo date("d-M-Y h:i a", strtotime($row->created_at)); ?></span>
-                                
-                            </div>
-
-                            <div class="d-flex justify-content-between mt-3">
-                                <?php
-                                $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
-                                $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
-                                ?>
-                                <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
-                                    <a href="<?= base_url('Leads/delete/'.$row->id) ?>" 
-                                       class="btn btn-danger"
-                                       style="padding:8px 14px; font-size:13px;"
-                                       onclick="return confirm('Are you sure you want to delete this record?');">
-                                       <i class="fas fa-trash"></i> Delete
+                <!-- Modal -->
+                <div class="modal fade" id="mobileModal<?= $row->id ?>" tabindex="-1" aria-labelledby="mobileModalLabel<?= $row->id ?>" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="mobileModalLabel<?= $row->id ?>">Call Numbers - <?= ucwords($row->contact_name) ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <ul class="list-group">
+                            <?php foreach($numbers as $num): ?>
+                                <li class="list-group-item">
+                                    <a href="tel:<?= $num ?>" onclick="feedback_form(<?= $row->id ?>, '<?= $num ?>', '<?= addslashes($row->contact_name) ?>')">
+                                        <?= $num ?>
                                     </a>
-                                <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            <?php endif; ?>
+ <span class="small d-block mt-1">
+                <i class="fa fa-map-marker"></i> <?= $row->address ?>
+            </span>
+        </h6>
 
-                                <button onclick="window.location.href='<?php echo base_url(); ?>Leads/lead_details/<?php echo $row->id; ?>'" 
-                                        class="btn btn-primary"
-                                        style="padding:8px 14px; font-size:13px;">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </div>
-                        </div>
-                    </li>
-                    <?php } } ?>
+        <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+            <span>Assigned To: <b><?= ucwords($assign_to->name) ?></b></span>
+            <span>Course: <b><?= $row->description ?></b></span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+            <span>Last Call: <?= date("d-M-Y h:i a", strtotime($last_call->created_at)) ?></span>
+            <span>
+                <?php if($row->status_id==0): ?>
+                    <span class="badge bg-success" style="font-size:13px; padding:6px 10px;">Fresh Lead</span>
+                <?php else: ?>
+                    <span class="badge bg-info" style="font-size:13px; padding:6px 10px;"><?= $status->name ?></span>
+                <?php endif; ?>
+            </span>
+        </div>
+
+        <?php if($last_call->remark): ?>
+            <div class="mt-2" style="font-size:14px;">Remark: <i><?= $last_call->remark ?></i></div>
+            <div class="mt-2" style="font-size:14px;">Source: <i><?= $row->source ?></i></div>
+        <?php endif; ?>
+
+        <div class="d-flex justify-content-between mt-2" style="font-size:14px;">
+            <span>Next Followup: <?= ($row->next_followup!="0000-00-00 00:00:00") ? date("d-M-Y h:i a", strtotime($row->next_followup)) : '' ?></span>
+            <span>Date Created: <?= date("d-M-Y h:i a", strtotime($row->created_at)) ?></span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <?php
+            $logged_in_user = $this->db->get_where('users', ['id' => $user->id])->row();
+            $access_array = !empty($logged_in_user->access) ? explode(',', $logged_in_user->access) : [];
+            ?>
+            <?php if ($logged_in_user->parent_id == 1 || in_array('3', $access_array)): ?>
+                <a href="<?= base_url('Leads/delete/'.$row->id) ?>" 
+                   class="btn btn-danger"
+                   style="padding:8px 14px; font-size:13px;"
+                   onclick="return confirm('Are you sure you want to delete this record?');">
+                   <i class="fas fa-trash"></i> Delete
+                </a>
+            <?php endif; ?>
+
+            <button onclick="window.location.href='<?= base_url() ?>Leads/lead_details/<?= $row->id ?>'" 
+                    class="btn btn-primary"
+                    style="padding:8px 14px; font-size:13px;">
+                <i class="fas fa-eye"></i> View
+            </button>
+    </div>
+</li>
+<?php endif; endforeach; ?>
+
+
+
                 </ul>
             </div>
         </div>
@@ -508,11 +547,10 @@ $(document).ready(function() {
 
 
 
-
 <div class="modal fade" id="addLeadModal" tabindex="-1" aria-labelledby="addLeadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <form action="<?= base_url('Leads/store') ?>" method="post">
+      <form action="<?= base_url('Leads/store') ?>" method="post" id="addLeadForm">
         <div class="modal-header">
           <h5 class="modal-title" id="addLeadModalLabel">Add New Lead</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -523,10 +561,21 @@ $(document).ready(function() {
             <label class="form-label">Contact Name</label>
             <input type="text" name="contact_name" class="form-control" required>
           </div>
+
+          <!-- MOBILE NUMBERS -->
           <div class="mb-3">
-            <label class="form-label">Mobile No</label>
-            <input type="text" name="mobile_no" class="form-control" required>
+            <label class="form-label">Mobile Numbers</label>
+            <div id="mobile_numbers_container">
+              <div class="input-group mb-2 phone-number-field">
+                <input type="text" name="mobile_numbers[]" class="form-control" placeholder="Enter mobile number" required>
+                <button type="button" class="btn btn-outline-success btn-sm add-number-btn" title="Add another number">
+                  <i class="fa-solid fa-circle-plus"></i>
+                </button>
+              </div>
+            </div>
+            <small class="text-muted">First number will be stored in <strong>mobile_no</strong>, additional numbers in <strong>add_mobile_no</strong>.</small>
           </div>
+
           <div class="mb-3">
             <label class="form-label">Email</label>
             <input type="email" name="email" class="form-control">
@@ -549,6 +598,55 @@ $(document).ready(function() {
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('mobile_numbers_container');
+
+    // Add/remove mobile fields dynamically
+    container.addEventListener('click', function(e) {
+        if (e.target.closest('.add-number-btn')) {
+            const newField = document.createElement('div');
+            newField.classList.add('input-group', 'mb-2', 'phone-number-field');
+            newField.innerHTML = `
+                <input type="text" name="mobile_numbers[]" class="form-control" placeholder="Enter mobile number" required>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-number-btn" title="Remove number">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(newField);
+        }
+
+        if (e.target.closest('.remove-number-btn')) {
+            e.target.closest('.phone-number-field').remove();
+        }
+    });
+
+    // Optional: validate numbers (10 digits or +91)
+    const form = document.getElementById('addLeadForm');
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+        form.querySelectorAll('input[name="mobile_numbers[]"]').forEach(input => {
+            const val = input.value.trim();
+            if (!/^(\+91)?\d{10}$/.test(val)) {
+                hasError = true;
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        if (hasError) {
+            e.preventDefault();
+            alert("❌ Enter valid mobile numbers (10 digits or +91XXXXXXXXXX).");
+        }
+    });
+});
+</script>
+
+<style>
+.is-invalid { border-color: #dc3545 !important; }
+</style>
+
 
 
     <!-- ✅ Desktop View (Table) -->

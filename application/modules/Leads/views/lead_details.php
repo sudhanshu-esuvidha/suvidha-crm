@@ -115,6 +115,15 @@
 						</a>
 					</li>
 				</ul>
+                <?php if($this->session->flashdata('success')): ?>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?= $this->session->flashdata('success'); ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<?php endif; ?>
+
+
+
 				<div class="tab-content">
 					<div class="tab-pane active" id="notification_tab" role="tabpanel">
 						<div class="employee-noti-content">
@@ -134,31 +143,106 @@
 																<div class="staff-id">Course : <?php echo ucwords($data->description); ?></div>
 																<div class="small doj text-muted">Date  Created : <?php echo date("d M Y h:i a",strtotime($data->created_at));  ?></div>
 																<div class="staff-msg">
-																    <a class="btn btn-custom" href="tel:<?php echo $data->mobile_no; ?>" onclick="feedback_form(<?php echo $row->id; ?>,<?php echo $data->mobile_no; ?>)">
-									<i class="la la-phone-volume"></i>	Make Call
-																		</a> <!-- WhatsApp Button -->
-<button type="button" class="btn btn-success" onclick="openWhatsAppBox('<?php echo $data->mobile_no; ?>')">
+																   <!-- Make Call Button -->
+<button type="button" class="btn btn-custom" onclick="openCallBox('<?php echo $data->mobile_no; ?>','<?php echo !empty($data->add_mobile_no) ? $data->add_mobile_no : ''; ?>')">
+    <i class="la la-phone-volume"></i> Make Call
+</button>
+
+<!-- Call Selection Modal -->
+<div class="modal fade" id="callModal" tabindex="-1" aria-labelledby="callModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="callModalLabel">Select Number to Call</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select id="callSelectNumber" class="form-select mb-3">
+          <!-- Options will be populated dynamically -->
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="makeCall()">Call</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let callNumbers = [];
+
+function openCallBox(mainNumber, addNumbers) {
+    callNumbers = [mainNumber];
+    if(addNumbers) {
+        const extraNumbers = addNumbers.split(',').map(num => num.trim()).filter(Boolean);
+        callNumbers = callNumbers.concat(extraNumbers);
+    }
+
+    const select = document.getElementById("callSelectNumber");
+    select.innerHTML = '';
+    callNumbers.forEach(num => {
+        const option = document.createElement('option');
+        option.value = num;
+        option.textContent = num;
+        select.appendChild(option);
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('callModal'));
+    modal.show();
+}
+
+function makeCall() {
+    const selectedNumber = document.getElementById("callSelectNumber").value;
+    window.location.href = "tel:" + selectedNumber;
+}
+</script>
+<!-- WhatsApp Button -->
+<button type="button" class="btn btn-success" onclick="openWhatsAppBox('<?php echo $data->mobile_no; ?>','<?php echo !empty($data->add_mobile_no) ? $data->add_mobile_no : ''; ?>')">
     <i class="la la-whatsapp"></i> WhatsApp
 </button>
 
 <!-- Draggable WhatsApp Box -->
-<div id="whatsappBox" class="whatsapp-box">
+<div id="whatsappBox" class="whatsapp-box" style="display:none;">
     <div id="whatsappHeader" class="whatsapp-header">
         <span>Send WhatsApp Message</span>
         <button class="close-btn" onclick="closeWhatsAppBox()">✕</button>
     </div>
+
+    <div class="mb-2">
+        <select id="whatsappSelectNumber" class="form-select form-select-sm">
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+
     <textarea id="whatsappMessage" placeholder="Type your message..."></textarea>
     <button class="send-btn" onclick="sendWhatsApp()">Send</button>
 </div>
-</div>
+                                                                </div>
 															</div>
 														</div>
 														<div class="col-md-7">
 															<ul class="personal-info" >
 																<li>
-																	<div class="title">Phone:</div>
-																	<div class="text"><?php echo $data->mobile_no; ?></div>
-																</li>
+    <div class="title">Phone:</div>
+    <div class="text">
+        <?php
+        // Start with main mobile number
+        $numbers = [$data->mobile_no];
+
+        // Add additional numbers if present
+        if (!empty($data->add_mobile_no)) {
+            $extraNumbers = explode(',', $data->add_mobile_no);
+            $extraNumbers = array_map('trim', $extraNumbers); // remove spaces
+            $numbers = array_merge($numbers, $extraNumbers);
+        }
+
+        // Display all numbers, separated by comma
+        echo implode(', ', $numbers);
+        ?>
+    </div>
+</li>
+
 																<li>
 																	<div class="title">Email:</div>
 																	<div class="text"><?php echo $data->email; ?></div>
@@ -182,8 +266,18 @@
 														</div>
 													</div>
 												</div>
-												<div class="pro-edit"><a data-bs-target="#profile_info" data-bs-toggle="modal" class="edit-icon" href="#"><i class="fa-solid fa-pencil"></i></a></div>
-											</div>
+<div class="pro-edit">
+    <!-- Add Number Icon -->
+    <a href="#" class="edit-icon text-success me-2" data-bs-toggle="modal" data-bs-target="#addNumberModal">
+        <i class="fa-solid fa-circle-plus"></i>
+    </a>
+
+    <!-- Edit Pencil Icon -->
+    
+</div>
+											 
+
+                                            </div>
 						</div>
 					</div>
 				<div class="tab-pane fade" id="schedule_tab" role="tabpanel">
@@ -446,6 +540,116 @@ function openFeedbackModal() {
 }
 p{ margin-bottom:0px!important;}
 		</style>
+        <!-- Add Number Modal -->
+<!-- Add Number Modal -->
+<!-- Add Number Modal -->
+<div class="modal fade" id="addNumberModal" tabindex="-1" aria-labelledby="addNumberLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-3">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-dark" id="addNumberLabel">
+          <i class="fa-solid fa-phone me-2 text-success"></i> Add Phone Numbers
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-body">
+            <p class="text-muted small mb-3">
+              Add one or more phone numbers. Click <span class="text-success fw-semibold">+</span> to add more, or <span class="text-danger fw-semibold">🗑️</span> to remove.
+            </p>
+<?php 
+$lead_id = $this->uri->segment(3); // assuming URL is like: /Leads/save_additional_numbers/316
+?>
+            <!-- FORM -->
+<form id="addNumbersForm" method="post" action="<?= base_url('Leads/save_additional_numbers/'.$lead_id) ?>">
+    <div id="phone_numbers_container">
+        <div class="input-group mb-2 phone-number-field">
+            <input type="text" name="phone_numbers[]" class="form-control form-control-sm" placeholder="Enter phone number" required>
+            <button type="button" class="btn btn-outline-success btn-sm add-number-btn" title="Add another number">
+                <i class="fa-solid fa-circle-plus"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="mt-3 text-end">
+        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-check me-1"></i> Save
+        </button>
+    </div>
+</form>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('phone_numbers_container');
+    const form = document.getElementById('addNumbersForm');
+
+    // Add/remove fields dynamically
+    container.addEventListener('click', function(e) {
+        if (e.target.closest('.add-number-btn')) {
+            const newField = document.createElement('div');
+            newField.classList.add('input-group', 'mb-2', 'phone-number-field');
+            newField.innerHTML = `
+                <input type="text" name="phone_numbers[]" class="form-control form-control-sm" placeholder="Enter phone number" required>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-number-btn" title="Remove number">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(newField);
+        }
+
+        if (e.target.closest('.remove-number-btn')) {
+            e.target.closest('.phone-number-field').remove();
+        }
+    });
+
+    // Validate before submit
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+
+        form.querySelectorAll('input[name="phone_numbers[]"]').forEach(input => {
+            const val = input.value.trim();
+            const regex = /^(\+91)?\d{10}$/;
+
+            if (!regex.test(val)) {
+                hasError = true;
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+
+        if (hasError) {
+            e.preventDefault();
+            alert("❌ Enter valid phone numbers (10 digits or +91XXXXXXXXXX).");
+        }
+    });
+});
+</script>
+
+
+</script>
+<style>
+/* Highlight invalid fields */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+</style>
+
+
+
+
 		<!-- Feedback Modal -->
 <div class="modal fade" id="feedbackForm" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -512,31 +716,51 @@ p{ margin-bottom:0px!important;}
         </div>
     </div>
 </div>
+
+
+
 <script>
+let currentNumbers = [];
 
-let currentMobile = "";
-
-function openWhatsAppBox(mobile) {
-    currentMobile = mobile;
+function openWhatsAppBox(mainNumber, addNumbers) {
     const box = document.getElementById("whatsappBox");
     box.style.display = "flex";
+
+    // Combine main number and additional numbers
+    currentNumbers = [mainNumber];
+    if(addNumbers) {
+        const extraNumbers = addNumbers.split(',').map(num => num.trim()).filter(Boolean);
+        currentNumbers = currentNumbers.concat(extraNumbers);
+    }
+
+    // Populate dropdown
+    const select = document.getElementById("whatsappSelectNumber");
+    select.innerHTML = '';
+    currentNumbers.forEach(num => {
+        const option = document.createElement('option');
+        option.value = num;
+        option.textContent = num;
+        select.appendChild(option);
+    });
+
     document.getElementById("whatsappMessage").focus();
 }
 
 function closeWhatsAppBox() {
-    const box = document.getElementById("whatsappBox");
-    box.style.display = "none";
+    document.getElementById("whatsappBox").style.display = "none";
     document.getElementById("whatsappMessage").value = "";
 }
 
+// Send WhatsApp message
 function sendWhatsApp() {
-    let message = document.getElementById("whatsappMessage").value.trim();
+    const message = document.getElementById("whatsappMessage").value.trim();
     if (!message) {
         alert("Please type a message first.");
         return;
     }
 
-    let url = "https://wa.me/" + currentMobile + "?text=" + encodeURIComponent(message);
+    const selectedNumber = document.getElementById("whatsappSelectNumber").value;
+    const url = "https://wa.me/" + selectedNumber + "?text=" + encodeURIComponent(message);
     window.open(url, "_blank");
 
     closeWhatsAppBox();
@@ -549,9 +773,7 @@ function dragElement(elmnt) {
     const header = document.getElementById("whatsappHeader");
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-    // Mouse events
     header.addEventListener('mousedown', dragMouseDown);
-    // Touch events
     header.addEventListener('touchstart', dragTouchStart, {passive:false});
 
     function dragMouseDown(e) {
@@ -577,7 +799,6 @@ function dragElement(elmnt) {
         document.onmousemove = null;
     }
 
-    // Touch support
     function dragTouchStart(e) {
         e.preventDefault();
         const touch = e.touches[0];

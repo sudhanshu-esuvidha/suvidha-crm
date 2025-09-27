@@ -512,19 +512,38 @@ public function store()
 {
     $contact_name = $this->input->post('contact_name');
     $email        = $this->input->post('email');
-    $mobile_no    = preg_replace('/\D/', '', $this->input->post('mobile_no'));
-  
+    $mobile_numbers = $this->input->post('mobile_numbers'); // array from modal
     $description  = $this->input->post('description');
     $source       = $this->input->post('source');
 
-    // Validate mobile
-    if (strlen($mobile_no) == 12 && substr($mobile_no, 0, 2) == '91') {
-        $mobile_no = substr($mobile_no, 2);
-    }
-    if (strlen($mobile_no) != 10) {
-        $this->session->set_flashdata('errors', 'Invalid mobile number');
+    if (!$mobile_numbers || !is_array($mobile_numbers) || empty($mobile_numbers)) {
+        $this->session->set_flashdata('errors', 'Please enter at least one mobile number');
         redirect('Leads/add');
     }
+
+    // Clean numbers (remove non-digit characters) and validate
+    $clean_numbers = [];
+    foreach ($mobile_numbers as $num) {
+        $num = preg_replace('/\D/', '', $num);
+
+        // Handle +91 prefix
+        if (strlen($num) == 12 && substr($num, 0, 2) == '91') {
+            $num = substr($num, 2);
+        }
+
+        if (strlen($num) != 10) {
+            $this->session->set_flashdata('errors', 'Invalid mobile number: ' . $num);
+            redirect('Leads/add');
+        }
+
+        $clean_numbers[] = $num;
+    }
+
+    // First number → mobile_no
+    $mobile_no = $clean_numbers[0];
+
+    // Additional numbers → add_mobile_no (CSV)
+    $add_mobile_no = count($clean_numbers) > 1 ? implode(',', array_slice($clean_numbers, 1)) : null;
 
     $user_info = $this->session->userdata('user_info');
 
@@ -533,23 +552,23 @@ public function store()
 
     // Insert lead
     $lead_data = [
-        'contact_name' => $contact_name,
-        'mobile_no'    => $mobile_no,
-        'email'        => $email,
-        'owner_name'   => $contact_name,
-       
-        'description'  => $description,
-        'source'       => $source,
-        'remark'       => 'Fresh Lead',
-        'parent_id'    => $parent_id,
-        'assign_to'    => $this->session->userdata('site_userid'),
-        'created_by'   => $this->session->userdata('site_userid'),
-        'created_at'   => date('Y-m-d H:i:s')
+        'contact_name'  => $contact_name,
+        'mobile_no'     => $mobile_no,
+        'add_mobile_no' => $add_mobile_no, // store additional numbers
+        'email'         => $email,
+        'owner_name'    => $contact_name,
+        'description'   => $description,
+        'source'        => $source,
+        'remark'        => 'Fresh Lead',
+        'parent_id'     => $parent_id,
+        'assign_to'     => $this->session->userdata('site_userid'),
+        'created_by'    => $this->session->userdata('site_userid'),
+        'created_at'    => date('Y-m-d H:i:s')
     ];
 
     $lead_id = $this->Common_Model->insert('leads', $lead_data);
 
-    // ✅ Insert status log automatically
+    // Insert status log automatically
     $status_log = [
         'lead_id'      => $lead_id,
         'created_by'   => $this->session->userdata('site_userid'),
@@ -561,6 +580,39 @@ public function store()
     $this->session->set_flashdata('success', 'Lead added successfully.');
     redirect('Leads/list');
 }
+
+public function save_additional_numbers($lead_id = null) {
+
+    if (!$lead_id) {
+        $this->session->set_flashdata('error', 'Lead ID is missing!');
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    $numbers = $this->input->post('phone_numbers');
+
+    if (!$numbers || !is_array($numbers) || empty($numbers)) {
+        $this->session->set_flashdata('error', 'Please enter at least one phone number!');
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    // Convert array to CSV
+    $numbers_csv = implode(',', $numbers);
+
+    $this->db->where('id', $lead_id);
+    $update = $this->db->update('leads', ['add_mobile_no' => $numbers_csv]);
+
+    if ($update) {
+        $this->session->set_flashdata('success', 'Numbers saved successfully!');
+    } else {
+        $this->session->set_flashdata('error', 'Failed to save numbers.');
+    }
+
+    // Redirect back to the same page
+    redirect($_SERVER['HTTP_REFERER']);
+}
+
+
+
 
 
 }
