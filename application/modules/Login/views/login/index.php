@@ -32,7 +32,7 @@
 			
 
 				<div class="account-box">
-				    <img class="img-fluid" src="<?php echo base_url(); ?>assets/img/logo.png" >
+				    <img class="img-fluid" src="<?php echo base_url(); ?>assets/img/siteicon.png" >
 					<div class="account-wrapper" style="border: #011C55 solid 1px;">
 						<h3 class="account-title">Login</h3>
 						<p class="account-subtitle">Please log in to your account</p>
