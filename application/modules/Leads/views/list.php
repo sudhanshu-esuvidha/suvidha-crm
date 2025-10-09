@@ -376,8 +376,12 @@ $(document).ready(function() {
 					      
 					  </div>    
 					</div>
+                    
 <div class="row mt-2" style="padding-right:0.01px !important;">
-
+<div class="mb-2 d-block d-md-none">
+    <input type="checkbox" id="select_all_mobile" style="transform: scale(1.2); margin-right:5px;">
+    <label for="select_all_mobile" class="fw-bold">Select All Leads</label>
+</div>
     <!-- ✅ Mobile View (Cards) -->
 <div class="col-12 d-block d-md-none">
     <div class="card1 flex-fill" style="padding: 1px; border-radius: 8px;">
@@ -621,6 +625,25 @@ $(document).ready(function() {
 </div>
 
 <script>
+    // Desktop
+$('#select_all').on('change', function() {
+    $('.lead_ids').prop('checked', this.checked);
+});
+
+// Mobile
+$('#select_all_mobile').on('change', function() {
+    $('.lead_ids').prop('checked', this.checked);
+});
+
+// Optional: if any individual checkbox is unchecked, uncheck the "Select All"
+$('.lead_ids').on('change', function() {
+    const total = $('.lead_ids').length;
+    const checked = $('.lead_ids:checked').length;
+
+    $('#select_all').prop('checked', total === checked);
+    $('#select_all_mobile').prop('checked', total === checked);
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('mobile_numbers_container');
 
